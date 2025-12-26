@@ -1,65 +1,134 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useChat } from "ai/react";
+import { useEffect, useRef } from "react";
+import Link from "next/link"; // <--- Import indispensable pour la navigation
+
+export default function ChatPage() {
+  const { messages, input, handleInputChange, handleSubmit, isLoading, error } =
+    useChat();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="flex flex-col h-screen bg-[#fdfbf7] text-gray-800 font-sans">
+      {/* --- HEADER AVEC NAVIGATION --- */}
+      <header className="flex-none p-4 bg-white border-b border-yellow-600/20 shadow-sm flex items-center justify-between z-10">
+        {/* Logo & Titre */}
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-800 flex items-center justify-center text-white font-bold text-lg shadow-md">
+            M
+          </div>
+          <div>
+            <h1 className="font-bold text-lg text-gray-900 leading-tight">
+              Mindoguesito
+            </h1>
+            <p className="text-xs text-yellow-700 font-medium tracking-wide uppercase">
+              Gardien des Savoirs
+            </p>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+        {/* --- NOUVEAU MENU DE NAVIGATION --- */}
+        <nav className="flex gap-4 text-sm font-medium">
+          <Link
+            href="/journal"
+            className="text-gray-600 hover:text-yellow-700 transition-colors"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Journal
+          </Link>
+          <Link
+            href="/a-propos"
+            className="text-gray-600 hover:text-yellow-700 transition-colors"
           >
-            Documentation
-          </a>
-        </div>
+            À Propos
+          </Link>
+        </nav>
+      </header>
+
+      {/* ZONE DE CHAT */}
+      <main className="flex-grow overflow-y-auto p-4 space-y-6 scroll-smooth">
+        {/* Message d'accueil */}
+        {messages.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-full text-center opacity-60 mt-10">
+            <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mb-4 text-4xl">
+              🐍
+            </div>
+            <p className="text-lg font-serif italic text-gray-600 max-w-md">
+              &quot;Kwabo. Je suis l&apos;esprit de la mémoire. Pose-moi une
+              question sur l&apos;histoire ou les rites.&quot;
+            </p>
+          </div>
+        )}
+
+        {/* Messages */}
+        {messages.map((m) => (
+          <div
+            key={m.id}
+            className={`flex w-full ${
+              m.role === "user" ? "justify-end" : "justify-start"
+            }`}
+          >
+            <div
+              className={`max-w-[85%] md:max-w-[70%] rounded-2xl px-5 py-3 shadow-sm leading-relaxed ${
+                m.role === "user"
+                  ? "bg-gray-800 text-white rounded-br-none"
+                  : "bg-white border border-gray-100 text-gray-800 rounded-bl-none"
+              }`}
+            >
+              <div className="whitespace-pre-wrap">{m.content}</div>
+            </div>
+          </div>
+        ))}
+
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="bg-white border border-gray-100 px-4 py-3 rounded-2xl rounded-bl-none shadow-sm flex items-center gap-1">
+              <span className="animate-pulse text-2xl text-yellow-600">
+                ...
+              </span>
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="p-4 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm text-center">
+            Le lien avec les esprits est instable. Réessayez.
+          </div>
+        )}
+
+        <div ref={messagesEndRef} />
       </main>
+
+      {/* INPUT */}
+      <div className="flex-none p-4 bg-white border-t border-gray-100">
+        <form
+          onSubmit={handleSubmit}
+          className="max-w-4xl mx-auto relative flex items-center gap-2"
+        >
+          <input
+            className="flex-grow bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-full focus:ring-yellow-500 focus:border-yellow-500 block w-full p-4 pl-5 shadow-sm outline-none transition-all"
+            value={input}
+            onChange={handleInputChange}
+            placeholder="Interrogez les ancêtres..."
+            disabled={isLoading}
+          />
+          <button
+            type="submit"
+            disabled={isLoading || !input.trim()}
+            className="absolute right-2 bg-yellow-700 hover:bg-yellow-800 text-white p-2.5 rounded-full transition-colors disabled:opacity-50"
+          >
+            ➤
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
