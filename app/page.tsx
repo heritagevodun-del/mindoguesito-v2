@@ -3,6 +3,7 @@
 import { useChat } from "ai/react";
 import { useEffect, useRef } from "react";
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
 
 export default function ChatPage() {
   const { messages, input, handleInputChange, handleSubmit, isLoading, error } =
@@ -19,7 +20,7 @@ export default function ChatPage() {
 
   return (
     <div className="flex flex-col h-[100dvh] overflow-hidden bg-[#fdfbf7] text-gray-800 font-sans">
-      {/* --- HEADER --- */}
+      {/* --- HEADER (Ergonomie conservée : pt-14) --- */}
       <header className="flex-none px-4 pt-14 pb-4 bg-white border-b border-yellow-600/20 shadow-sm flex items-center justify-between z-10">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-800 flex items-center justify-center text-white font-bold text-base shadow-md">
@@ -73,13 +74,57 @@ export default function ChatPage() {
             }`}
           >
             <div
-              className={`max-w-[85%] md:max-w-[70%] rounded-2xl px-4 py-2.5 shadow-sm leading-relaxed text-sm md:text-base ${
+              className={`max-w-[85%] md:max-w-[75%] rounded-2xl px-4 py-3 shadow-sm text-sm md:text-base ${
                 m.role === "user"
                   ? "bg-gray-800 text-white rounded-br-none"
                   : "bg-white border border-gray-100 text-gray-800 rounded-bl-none"
               }`}
             >
-              <div className="whitespace-pre-wrap">{m.content}</div>
+              {/* RENDU MARKDOWN INTELLIGENT (SANS ERREUR DE LINTER) */}
+              <ReactMarkdown
+                components={{
+                  // J'ai supprimé la ligne 'li' qui causait l'avertissement.
+                  // Le style est géré par 'ul' et 'ol' ci-dessous.
+                  p: ({ children }) => (
+                    <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>
+                  ),
+                  strong: ({ children }) => (
+                    <span className="font-bold text-yellow-600 brightness-90">
+                      {children}
+                    </span>
+                  ),
+                  ul: ({ children }) => (
+                    <ul className="list-disc pl-4 mb-2 space-y-1">
+                      {children}
+                    </ul>
+                  ),
+                  ol: ({ children }) => (
+                    <ol className="list-decimal pl-4 mb-2 space-y-1">
+                      {children}
+                    </ol>
+                  ),
+                  h1: ({ children }) => (
+                    <h3 className="font-bold text-lg mb-2 mt-1">{children}</h3>
+                  ),
+                  h2: ({ children }) => (
+                    <h4 className="font-bold text-base mb-2 mt-1">
+                      {children}
+                    </h4>
+                  ),
+                  h3: ({ children }) => (
+                    <h5 className="font-bold text-sm mb-1 mt-1 uppercase opacity-80">
+                      {children}
+                    </h5>
+                  ),
+                  code: ({ children }) => (
+                    <code className="bg-gray-200/50 px-1 py-0.5 rounded text-xs font-mono">
+                      {children}
+                    </code>
+                  ),
+                }}
+              >
+                {m.content}
+              </ReactMarkdown>
             </div>
           </div>
         ))}
@@ -101,16 +146,12 @@ export default function ChatPage() {
         <div ref={messagesEndRef} className="h-2" />
       </main>
 
-      {/* --- INPUT AREA --- */}
+      {/* --- INPUT AREA (Ergonomie conservée : pb-24 + text-base) --- */}
       <div className="flex-none px-4 pt-4 pb-24 bg-white border-t border-gray-100 safe-area-bottom shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)] z-20">
         <form
           onSubmit={handleSubmit}
           className="max-w-4xl mx-auto relative flex items-center gap-2"
         >
-          {/* CORRECTION CRITIQUE :
-              text-base (16px) au lieu de text-sm (14px).
-              Ceci empêche l'iPhone de zoomer automatiquement quand on clique.
-          */}
           <input
             className="flex-grow bg-gray-50 border border-gray-200 text-gray-900 text-base rounded-2xl focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 block w-full py-3.5 pl-4 pr-12 shadow-sm outline-none transition-all placeholder-gray-400"
             value={input}
