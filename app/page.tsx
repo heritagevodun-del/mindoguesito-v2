@@ -19,12 +19,12 @@ export default function ChatPage() {
 
   return (
     <div className="flex flex-col h-[100dvh] overflow-hidden bg-[#fdfbf7] text-gray-800 font-sans">
-      {/* --- HEADER (MODIFIÉ : ENCORE PLUS BAS) --- */}
+      {/* --- HEADER (MODIFIÉ : ESPACE DE SÉCURITÉ EN HAUT) --- */}
       {/* CHANGEMENT : 
-          - pt-14 (56px) : On descend franchement le menu.
-          - pb-4 : On garde l'espacement interne.
+          - pt-8 (Padding Top) : On pousse le contenu vers le bas pour éviter la barre d'adresse/encoche.
+          - pb-4 (Padding Bottom) : On garde un espace propre sous le texte.
       */}
-      <header className="flex-none px-4 pt-14 pb-4 bg-white border-b border-yellow-600/20 shadow-sm flex items-center justify-between z-10">
+      <header className="flex-none px-4 pt-8 pb-4 bg-white border-b border-yellow-600/20 shadow-sm flex items-center justify-between z-10">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-800 flex items-center justify-center text-white font-bold text-base shadow-md">
             M
@@ -105,7 +105,7 @@ export default function ChatPage() {
         <div ref={messagesEndRef} className="h-2" />
       </main>
 
-      {/* --- INPUT AREA (POSITION ERGONOMIQUE HAUTE) --- */}
+      {/* --- INPUT AREA (POSITION HAUTE ERGONOMIQUE) --- */}
       <div className="flex-none px-4 pt-4 pb-24 bg-white border-t border-gray-100 safe-area-bottom shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)] z-20">
         <form
           onSubmit={handleSubmit}
