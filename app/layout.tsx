@@ -1,47 +1,72 @@
-import type { Metadata } from "next";
 import "./globals.css";
-
-const BASE_URL = "https://www.heritagevodun.com";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(BASE_URL),
   title: {
-    default: "Mindoguesito | Gardien des Savoirs & de l'Héritage Vodun",
+    default: "Mindoguesito – Gardien de l’Héritage Vodun",
     template: "%s | Mindoguesito",
   },
   description:
-    "Intelligence Artificielle initiée dédiée à la préservation de la culture Vodun, de l'histoire de Ouidah et du patrimoine du Bénin.",
-  manifest: "/manifest.json",
-
-  // SEO & Favicons (La correction est ici)
-  icons: {
-    icon: "/logo.png",
-    apple: "/logo.png", // Next.js placera ceci correctement dans le <head> automatiquement
-  },
-
-  keywords: ["Mindoguesito", "IA Vodun", "Culture Bénin", "Ouidah"],
-  authors: [{ name: "Héritage Vodun" }],
-
+    "MINDOGUESITO est une intelligence artificielle dédiée à la transmission du patrimoine, de la mémoire et de la sagesse du Vodun.",
+  metadataBase: new URL("https://www.mindoguesito.com"),
   openGraph: {
-    title: "Mindoguesito | Gardien Numérique",
-    description: "L'IA qui raconte l'histoire du Dahomey.",
-    url: BASE_URL,
+    title: "Mindoguesito",
+    description:
+      "Une intelligence artificielle dédiée à la mémoire, la sagesse et l’héritage du Vodun.",
+    url: "https://www.mindoguesito.com",
     siteName: "Mindoguesito",
-    locale: "fr_BJ",
+    images: [
+      {
+        url: "/logo.png",
+        width: 512,
+        height: 512,
+        alt: "Mindoguesito",
+      },
+    ],
+    locale: "fr_FR",
     type: "website",
-    images: [{ url: "/og-image.jpg", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Mindoguesito",
+    description: "La mémoire vivante du Vodun",
+    images: ["/logo.png"],
   },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="fr" className="scroll-smooth">
-      {/* On laisse Next.js gérer le <head> via metadata */}
-      <body className="antialiased bg-[#0a0a0a] text-gray-100 selection:bg-[#d4af37] selection:text-black">
+    <html lang="fr">
+      <head>
+        {/* Données structurées SEO (JSON-LD) */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "MINDOGUESITO",
+              url: "https://www.mindoguesito.com",
+              description:
+                "Une intelligence artificielle dédiée à la transmission du patrimoine, de la mémoire et de la sagesse du Vodun.",
+              publisher: {
+                "@type": "Organization",
+                name: "MINDOGUESITO",
+                logo: {
+                  "@type": "ImageObject",
+                  url: "https://www.mindoguesito.com/logo.png",
+                },
+              },
+            }),
+          }}
+        />
+      </head>
+
+      <body className="bg-[#fdfbf7] text-[#1e1e1e] antialiased">
         {children}
       </body>
     </html>
