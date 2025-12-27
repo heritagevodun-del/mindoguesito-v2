@@ -53,42 +53,46 @@ export default function JournalPage() {
         {/* GRILLE DES ARTICLES */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {entries.map((entry) => (
-            <article
+            /* CORRECTION : Ajout du LINK autour de la carte */
+            <Link
               key={entry.id}
-              className="group bg-[#1a1a1a] p-6 rounded-2xl border border-[#333] hover:border-[#d4af37]/50 shadow-lg hover:shadow-[0_10px_30px_rgba(212,175,55,0.1)] transition-all duration-300 flex flex-col h-full hover:-translate-y-1"
+              href={`/journal/${entry.id}`}
+              className="block h-full"
             >
-              {/* En-tête de carte */}
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex flex-wrap gap-2">
-                  {entry.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="text-[9px] uppercase tracking-wider font-bold text-[#d4af37] bg-[#d4af37]/10 px-2 py-1 rounded-md border border-[#d4af37]/20"
-                    >
-                      {tag}
-                    </span>
-                  ))}
+              <article className="group bg-[#1a1a1a] p-6 rounded-2xl border border-[#333] hover:border-[#d4af37]/50 shadow-lg hover:shadow-[0_10px_30px_rgba(212,175,55,0.1)] transition-all duration-300 flex flex-col h-full hover:-translate-y-1 cursor-pointer">
+                {/* En-tête de carte */}
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex flex-wrap gap-2">
+                    {entry.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="text-[9px] uppercase tracking-wider font-bold text-[#d4af37] bg-[#d4af37]/10 px-2 py-1 rounded-md border border-[#d4af37]/20"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                  <span className="text-[10px] text-gray-500 font-mono">
+                    {entry.date}
+                  </span>
                 </div>
-                <span className="text-[10px] text-gray-500 font-mono">
-                  {entry.date}
-                </span>
-              </div>
 
-              {/* Titre */}
-              <h2 className="text-xl font-serif font-bold mb-3 text-gray-100 group-hover:text-[#d4af37] transition-colors">
-                {entry.title}
-              </h2>
+                {/* Titre */}
+                <h2 className="text-xl font-serif font-bold mb-3 text-gray-100 group-hover:text-[#d4af37] transition-colors">
+                  {entry.title}
+                </h2>
 
-              {/* Extrait */}
-              <p className="text-gray-400 text-sm leading-relaxed mb-6 flex-grow line-clamp-4">
-                {entry.content}
-              </p>
+                {/* Extrait */}
+                <p className="text-gray-400 text-sm leading-relaxed mb-6 flex-grow line-clamp-4">
+                  {entry.excerpt} {/* Utilisation de l'excerpt pour l'aperçu */}
+                </p>
 
-              {/* Footer de carte (Optionnel : Lire la suite) */}
-              <div className="mt-auto pt-4 border-t border-gray-800 flex items-center text-[#d4af37] text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
-                Lire la chronique →
-              </div>
-            </article>
+                {/* Footer de carte */}
+                <div className="mt-auto pt-4 border-t border-gray-800 flex items-center text-[#d4af37] text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
+                  Lire la chronique →
+                </div>
+              </article>
+            </Link>
           ))}
         </div>
 

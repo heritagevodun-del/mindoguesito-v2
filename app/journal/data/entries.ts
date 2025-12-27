@@ -1,9 +1,11 @@
+// src/app/journal/data/entries.ts
+
 export interface JournalEntry {
   id: string;
   title: string;
   date: string;
-  excerpt: string; // Pour l'aperçu (SEO/Cards)
-  content: string; // Le contenu riche
+  excerpt: string; // Le résumé pour la carte
+  content: string; // Le texte complet pour l'article
   tags: string[];
 }
 
