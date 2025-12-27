@@ -4,11 +4,13 @@ import { useChat } from "ai/react";
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
+import TextareaAutosize from "react-textarea-autosize"; // <--- L'import de la zone élastique
 
 export default function ChatPage() {
   const { messages, input, handleInputChange, handleSubmit, isLoading, error } =
     useChat();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -17,6 +19,16 @@ export default function ChatPage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Fonction pour gérer l'envoi avec la touche Entrée (PC)
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault(); // Empêche le saut de ligne
+      if (input.trim()) {
+        formRef.current?.requestSubmit(); // Envoie le formulaire
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col h-[100dvh] overflow-hidden bg-[#fdfbf7] text-gray-800 font-sans">
@@ -80,11 +92,9 @@ export default function ChatPage() {
                   : "bg-white border border-gray-100 text-gray-800 rounded-bl-none"
               }`}
             >
-              {/* RENDU MARKDOWN INTELLIGENT (SANS ERREUR DE LINTER) */}
+              {/* RENDU MARKDOWN */}
               <ReactMarkdown
                 components={{
-                  // J'ai supprimé la ligne 'li' qui causait l'avertissement.
-                  // Le style est géré par 'ul' et 'ol' ci-dessous.
                   p: ({ children }) => (
                     <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>
                   ),
@@ -146,24 +156,30 @@ export default function ChatPage() {
         <div ref={messagesEndRef} className="h-2" />
       </main>
 
-      {/* --- INPUT AREA (Ergonomie conservée : pb-24 + text-base) --- */}
+      {/* --- INPUT AREA INTELLIGENTE (Auto-Grow) --- */}
       <div className="flex-none px-4 pt-4 pb-24 bg-white border-t border-gray-100 safe-area-bottom shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)] z-20">
         <form
+          ref={formRef}
           onSubmit={handleSubmit}
-          className="max-w-4xl mx-auto relative flex items-center gap-2"
+          className="max-w-4xl mx-auto relative flex items-end gap-2" // items-end aligne le bouton en bas si le texte grandit
         >
-          <input
-            className="flex-grow bg-gray-50 border border-gray-200 text-gray-900 text-base rounded-2xl focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 block w-full py-3.5 pl-4 pr-12 shadow-sm outline-none transition-all placeholder-gray-400"
+          {/* TEXTAREA ELASTIQUE */}
+          <TextareaAutosize
+            className="flex-grow bg-gray-50 border border-gray-200 text-gray-900 text-base rounded-2xl focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 block w-full py-3.5 pl-4 pr-12 shadow-sm outline-none transition-all placeholder-gray-400 resize-none overflow-hidden"
+            minRows={1}
+            maxRows={5} // Limite la hauteur max à 5 lignes avant de scroller
+            placeholder="Interrogez les ancêtres..."
             value={input}
             onChange={handleInputChange}
-            placeholder="Interrogez les ancêtres..."
+            onKeyDown={handleKeyDown} // Gestion de la touche Entrée
             disabled={isLoading}
             autoFocus
           />
+
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-yellow-700 hover:bg-yellow-800 disabled:bg-gray-300 text-white w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-sm"
+            className="absolute right-1.5 bottom-1.5 bg-yellow-700 hover:bg-yellow-800 disabled:bg-gray-300 text-white w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-sm mb-1" // Position ajustée
           >
             <span className="text-sm mb-0.5">➤</span>
           </button>
