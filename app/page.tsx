@@ -19,12 +19,8 @@ export default function ChatPage() {
 
   return (
     <div className="flex flex-col h-[100dvh] overflow-hidden bg-[#fdfbf7] text-gray-800 font-sans">
-      {/* --- HEADER (MODIFIÉ : ESPACE DE SÉCURITÉ EN HAUT) --- */}
-      {/* CHANGEMENT : 
-          - pt-8 (Padding Top) : On pousse le contenu vers le bas pour éviter la barre d'adresse/encoche.
-          - pb-4 (Padding Bottom) : On garde un espace propre sous le texte.
-      */}
-      <header className="flex-none px-4 pt-8 pb-4 bg-white border-b border-yellow-600/20 shadow-sm flex items-center justify-between z-10">
+      {/* --- HEADER --- */}
+      <header className="flex-none px-4 pt-14 pb-4 bg-white border-b border-yellow-600/20 shadow-sm flex items-center justify-between z-10">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-800 flex items-center justify-center text-white font-bold text-base shadow-md">
             M
@@ -105,14 +101,18 @@ export default function ChatPage() {
         <div ref={messagesEndRef} className="h-2" />
       </main>
 
-      {/* --- INPUT AREA (POSITION HAUTE ERGONOMIQUE) --- */}
+      {/* --- INPUT AREA --- */}
       <div className="flex-none px-4 pt-4 pb-24 bg-white border-t border-gray-100 safe-area-bottom shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)] z-20">
         <form
           onSubmit={handleSubmit}
           className="max-w-4xl mx-auto relative flex items-center gap-2"
         >
+          {/* CORRECTION CRITIQUE :
+              text-base (16px) au lieu de text-sm (14px).
+              Ceci empêche l'iPhone de zoomer automatiquement quand on clique.
+          */}
           <input
-            className="flex-grow bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-2xl focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 block w-full py-3.5 pl-4 pr-12 shadow-sm outline-none transition-all placeholder-gray-400"
+            className="flex-grow bg-gray-50 border border-gray-200 text-gray-900 text-base rounded-2xl focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 block w-full py-3.5 pl-4 pr-12 shadow-sm outline-none transition-all placeholder-gray-400"
             value={input}
             onChange={handleInputChange}
             placeholder="Interrogez les ancêtres..."
