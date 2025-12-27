@@ -4,14 +4,28 @@ import { useChat } from "ai/react";
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
-import TextareaAutosize from "react-textarea-autosize"; // <--- L'import de la zone élastique
+import TextareaAutosize from "react-textarea-autosize";
 
 export default function ChatPage() {
-  const { messages, input, handleInputChange, handleSubmit, isLoading, error } =
-    useChat();
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    isLoading,
+    error,
+    append,
+  } = useChat({
+    api: "/api/chat",
+    onError: (err) => {
+      console.error("Erreur Chat:", err);
+    },
+  });
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
+  // Scroll automatique vers le bas
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -20,64 +34,87 @@ export default function ChatPage() {
     scrollToBottom();
   }, [messages]);
 
-  // Fonction pour gérer l'envoi avec la touche Entrée (PC)
+  // Gestion intelligente de la touche Entrée (PC vs Mobile)
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault(); // Empêche le saut de ligne
+      e.preventDefault();
       if (input.trim()) {
-        formRef.current?.requestSubmit(); // Envoie le formulaire
+        formRef.current?.requestSubmit();
       }
     }
   };
 
+  // Suggestions de démarrage (Pour engager la conversation)
+  const suggestions = [
+    "✨ Qui es-tu ?",
+    "🐍 L'histoire du Python",
+    "🔮 C'est quoi le Fâ ?",
+    "🛡️ Les Zangbeto",
+  ];
+
   return (
-    <div className="flex flex-col h-[100dvh] overflow-hidden bg-[#fdfbf7] text-gray-800 font-sans">
-      {/* --- HEADER (Ergonomie conservée : pt-14) --- */}
-      <header className="flex-none px-4 pt-14 pb-4 bg-white border-b border-yellow-600/20 shadow-sm flex items-center justify-between z-10">
+    <div className="flex flex-col h-[100dvh] overflow-hidden bg-[#0a0a0a] text-gray-100 font-sans selection:bg-[#d4af37] selection:text-black">
+      {/* --- HEADER --- */}
+      <header className="flex-none px-4 pt-4 pb-4 bg-[#0a0a0a]/90 backdrop-blur-md border-b border-[#d4af37]/20 flex items-center justify-between z-10">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-800 flex items-center justify-center text-white font-bold text-base shadow-md">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#d4af37] to-[#8b4513] flex items-center justify-center text-black font-bold text-lg shadow-[0_0_15px_rgba(212,175,55,0.3)]">
             M
           </div>
           <div>
-            <h1 className="font-bold text-base text-gray-900 leading-tight">
-              Mindoguesito
+            <h1 className="font-serif font-bold text-lg text-[#d4af37] leading-tight tracking-wide">
+              MINDOGUESITO
             </h1>
-            <p className="text-[10px] text-yellow-700 font-medium tracking-wide uppercase">
+            <p className="text-[10px] text-gray-400 font-medium tracking-widest uppercase">
               Gardien des Savoirs
             </p>
           </div>
         </div>
 
-        <nav className="flex gap-3 text-xs font-medium">
+        {/* Navigation discrète */}
+        <nav className="flex gap-2 text-xs font-medium">
           <Link
-            href="/journal"
-            className="text-gray-600 hover:text-yellow-700 transition-colors py-1 px-2 rounded-md hover:bg-yellow-50"
+            href="https://www.heritagevodun.com" // Lien vers le site principal si besoin
+            className="text-gray-500 hover:text-[#d4af37] transition-colors py-2 px-3 rounded-md hover:bg-[#1a1a1a]"
           >
-            Journal
-          </Link>
-          <Link
-            href="/a-propos"
-            className="text-gray-600 hover:text-yellow-700 transition-colors py-1 px-2 rounded-md hover:bg-yellow-50"
-          >
-            À Propos
+            Retour au Site
           </Link>
         </nav>
       </header>
 
       {/* --- ZONE DE CHAT --- */}
-      <main className="flex-1 overflow-y-auto p-4 space-y-6 scroll-smooth w-full max-w-4xl mx-auto">
+      <main className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin scrollbar-thumb-[#d4af37]/20 w-full max-w-4xl mx-auto">
+        {/* ÉCRAN D'ACCUEIL (Si vide) */}
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full text-center opacity-60 px-4">
-            <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4 text-3xl shadow-inner">
-              🐍
+          <div className="flex flex-col items-center justify-center h-full text-center px-4 animate-fade-in">
+            <div className="w-20 h-20 bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] border border-[#d4af37]/30 rounded-full flex items-center justify-center mb-6 text-4xl shadow-2xl animate-pulse-slow">
+              ✨
             </div>
-            <p className="text-base font-serif italic text-gray-600 max-w-xs">
-              &quot;Kwabo. Je suis l&apos;esprit de la mémoire. Pose-moi une
-              question sur l&apos;histoire ou les rites.&quot;
+            {/* CORRECTION 1 & 2 : Utilisation de &quot; et &apos; pour échapper les caractères */}
+            <p className="text-lg md:text-xl font-serif text-gray-300 max-w-md leading-relaxed mb-8">
+              &quot;Kwabo. Je suis l&apos;esprit de la mémoire. <br />
+              Interroge-moi sur les rites, l&apos;histoire ou les
+              divinités.&quot;
             </p>
+
+            {/* Suggestions Chips */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-md">
+              {suggestions.map((sug, i) => (
+                <button
+                  key={i}
+                  onClick={() => append({ role: "user", content: sug })}
+                  className="px-4 py-3 bg-[#1a1a1a] border border-[#333] hover:border-[#d4af37] rounded-lg text-sm text-gray-300 hover:text-[#d4af37] transition-all duration-300 text-left flex items-center gap-2 group"
+                >
+                  <span className="text-xs opacity-50 group-hover:opacity-100">
+                    ➤
+                  </span>{" "}
+                  {sug}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
+        {/* LISTE DES MESSAGES */}
         {messages.map((m) => (
           <div
             key={m.id}
@@ -86,50 +123,67 @@ export default function ChatPage() {
             }`}
           >
             <div
-              className={`max-w-[85%] md:max-w-[75%] rounded-2xl px-4 py-3 shadow-sm text-sm md:text-base ${
+              className={`max-w-[85%] md:max-w-[80%] rounded-2xl px-5 py-4 shadow-lg text-[0.95rem] md:text-base leading-relaxed ${
                 m.role === "user"
-                  ? "bg-gray-800 text-white rounded-br-none"
-                  : "bg-white border border-gray-100 text-gray-800 rounded-bl-none"
+                  ? "bg-[#d4af37] text-black rounded-tr-none font-medium"
+                  : "bg-[#1a1a1a] border border-[#333] text-gray-200 rounded-tl-none"
               }`}
             >
-              {/* RENDU MARKDOWN */}
+              {/* RENDU MARKDOWN OPTIMISÉ */}
               <ReactMarkdown
                 components={{
                   p: ({ children }) => (
-                    <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>
+                    <p className="mb-2 last:mb-0">{children}</p>
                   ),
                   strong: ({ children }) => (
-                    <span className="font-bold text-yellow-600 brightness-90">
+                    <span
+                      className={`font-bold ${
+                        m.role === "user" ? "text-black" : "text-[#d4af37]"
+                      }`}
+                    >
                       {children}
                     </span>
                   ),
                   ul: ({ children }) => (
-                    <ul className="list-disc pl-4 mb-2 space-y-1">
+                    <ul className="list-disc pl-4 mb-2 space-y-1 opacity-90">
                       {children}
                     </ul>
                   ),
                   ol: ({ children }) => (
-                    <ol className="list-decimal pl-4 mb-2 space-y-1">
+                    <ol className="list-decimal pl-4 mb-2 space-y-1 opacity-90">
                       {children}
                     </ol>
                   ),
                   h1: ({ children }) => (
-                    <h3 className="font-bold text-lg mb-2 mt-1">{children}</h3>
+                    <h3 className="font-serif font-bold text-lg mb-2 mt-2 border-b border-gray-700 pb-1">
+                      {children}
+                    </h3>
                   ),
                   h2: ({ children }) => (
-                    <h4 className="font-bold text-base mb-2 mt-1">
+                    <h4 className="font-bold text-base mb-2 mt-2 uppercase tracking-wide opacity-80">
                       {children}
                     </h4>
                   ),
-                  h3: ({ children }) => (
-                    <h5 className="font-bold text-sm mb-1 mt-1 uppercase opacity-80">
-                      {children}
-                    </h5>
-                  ),
                   code: ({ children }) => (
-                    <code className="bg-gray-200/50 px-1 py-0.5 rounded text-xs font-mono">
+                    <code
+                      className={`px-1 py-0.5 rounded text-xs font-mono ${
+                        m.role === "user"
+                          ? "bg-black/10"
+                          : "bg-black/30 text-yellow-500"
+                      }`}
+                    >
                       {children}
                     </code>
+                  ),
+                  a: ({ href, children }) => (
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline decoration-dotted hover:text-[#d4af37] transition-colors"
+                    >
+                      {children}
+                    </a>
                   ),
                 }}
               >
@@ -139,39 +193,42 @@ export default function ChatPage() {
           </div>
         ))}
 
+        {/* LOADER (Quand l'IA réfléchit) */}
         {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-white border border-gray-100 px-4 py-3 rounded-2xl rounded-bl-none shadow-sm flex items-center gap-1">
-              <span className="animate-pulse text-xl text-yellow-600">...</span>
+          <div className="flex justify-start w-full animate-pulse">
+            <div className="bg-[#1a1a1a] border border-[#333] px-5 py-4 rounded-2xl rounded-tl-none flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 bg-[#d4af37] rounded-full animate-bounce"></div>
+              <div className="w-1.5 h-1.5 bg-[#d4af37] rounded-full animate-bounce delay-100"></div>
+              <div className="w-1.5 h-1.5 bg-[#d4af37] rounded-full animate-bounce delay-200"></div>
             </div>
           </div>
         )}
 
+        {/* MESSAGES D'ERREUR */}
         {error && (
-          <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs text-center mx-auto max-w-sm">
-            Le lien avec les esprits est instable. Réessayez.
+          <div className="p-3 rounded-lg bg-red-900/20 border border-red-800 text-red-400 text-xs text-center mx-auto max-w-sm">
+            Le lien avec les esprits est instable. Vérifiez votre connexion.
           </div>
         )}
 
-        <div ref={messagesEndRef} className="h-2" />
+        <div ref={messagesEndRef} className="h-4" />
       </main>
 
-      {/* --- INPUT AREA INTELLIGENTE (Auto-Grow) --- */}
-      <div className="flex-none px-4 pt-4 pb-24 bg-white border-t border-gray-100 safe-area-bottom shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)] z-20">
+      {/* --- INPUT AREA --- */}
+      <footer className="flex-none p-4 bg-[#0a0a0a] border-t border-[#d4af37]/20">
         <form
           ref={formRef}
           onSubmit={handleSubmit}
-          className="max-w-4xl mx-auto relative flex items-end gap-2" // items-end aligne le bouton en bas si le texte grandit
+          className="max-w-3xl mx-auto relative flex items-end gap-2"
         >
-          {/* TEXTAREA ELASTIQUE */}
           <TextareaAutosize
-            className="flex-grow bg-gray-50 border border-gray-200 text-gray-900 text-base rounded-2xl focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 block w-full py-3.5 pl-4 pr-12 shadow-sm outline-none transition-all placeholder-gray-400 resize-none overflow-hidden"
+            className="flex-grow bg-[#1a1a1a] border border-[#333] text-white text-base rounded-2xl focus:ring-1 focus:ring-[#d4af37] focus:border-[#d4af37] block w-full py-3.5 pl-5 pr-12 shadow-inner outline-none transition-all placeholder-gray-600 resize-none overflow-hidden"
             minRows={1}
-            maxRows={5} // Limite la hauteur max à 5 lignes avant de scroller
+            maxRows={5}
             placeholder="Interrogez les ancêtres..."
             value={input}
             onChange={handleInputChange}
-            onKeyDown={handleKeyDown} // Gestion de la touche Entrée
+            onKeyDown={handleKeyDown}
             disabled={isLoading}
             autoFocus
           />
@@ -179,12 +236,31 @@ export default function ChatPage() {
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="absolute right-1.5 bottom-1.5 bg-yellow-700 hover:bg-yellow-800 disabled:bg-gray-300 text-white w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-sm mb-1" // Position ajustée
+            className="absolute right-2 bottom-2 bg-[#d4af37] hover:bg-[#b89628] disabled:bg-[#333] disabled:text-gray-500 text-black w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-[0_0_15px_rgba(212,175,55,0.3)] hover:shadow-[0_0_20px_rgba(212,175,55,0.5)]"
+            /* CORRECTION 3 : Ajout d'un aria-label pour l'accessibilité */
+            aria-label="Envoyer le message"
+            title="Envoyer le message"
           >
-            <span className="text-sm mb-0.5">➤</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              className="w-5 h-5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
+              />
+            </svg>
           </button>
         </form>
-      </div>
+        <p className="text-center text-[#444] text-[10px] mt-3">
+          Mindoguesito est une IA. Vérifiez les informations historiques.
+        </p>
+      </footer>
     </div>
   );
 }
