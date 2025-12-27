@@ -1,24 +1,23 @@
 {
-  "name": "Mindoguesito - Gardien des Savoirs",
+  "name": "MINDOGUESITO",
   "short_name": "Mindoguesito",
-  "description": "Intelligence Artificielle dédiée à la culture Vodun et à l'histoire de Ouidah.",
+  "description": "MINDOGUESITO est une intelligence artificielle dédiée à la transmission de la sagesse, de la mémoire et du patrimoine du Vodun.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#fdfbf7",
   "theme_color": "#fdfbf7",
   "orientation": "portrait",
+  "lang": "fr",
   "icons": [
     {
       "src": "/logo.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "/logo.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ]
 }
