@@ -22,19 +22,34 @@ export default function ChatPage() {
     },
   });
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  // CHANGEMENT 1 : On cible le conteneur principal (main) et non plus un div vide
+  const scrollContainerRef = useRef<HTMLElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
-  // Scroll automatique vers le bas
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
+  // CHANGEMENT 2 : Fonction de scroll intelligente
   useEffect(() => {
-    scrollToBottom();
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const lastMessage = messages[messages.length - 1];
+
+    // Si pas de message, on ne fait rien
+    if (!lastMessage) return;
+
+    // Si c'est l'utilisateur qui vient d'envoyer -> Animation DOUCE pour l'effet "Waouh"
+    if (lastMessage.role === "user") {
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+    // Si c'est l'IA qui écrit (Streaming) -> Scroll INSTANTANÉ (Auto)
+    // C'est ça qui empêche la vibration. Le texte pousse l'écran sans le faire trembler.
+    else {
+      container.scrollTop = container.scrollHeight;
+    }
   }, [messages]);
 
-  // Gestion intelligente de la touche Entrée (PC vs Mobile)
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -44,7 +59,6 @@ export default function ChatPage() {
     }
   };
 
-  // Suggestions de démarrage
   const suggestions = [
     "✨ Qui es-tu ?",
     "🐍 L'histoire du Python",
@@ -56,7 +70,6 @@ export default function ChatPage() {
     <div className="flex flex-col h-[100dvh] overflow-hidden bg-[#0a0a0a] text-gray-100 font-sans selection:bg-[#d4af37] selection:text-black">
       {/* --- HEADER --- */}
       <header className="flex-none px-4 py-4 bg-[#0a0a0a]/95 backdrop-blur-md border-b border-[#d4af37]/20 flex items-center justify-between z-10">
-        {/* LOGO & TITRE */}
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#d4af37] to-[#8b4513] flex items-center justify-center text-black font-bold text-base shadow-[0_0_15px_rgba(212,175,55,0.3)]">
             M
@@ -71,7 +84,6 @@ export default function ChatPage() {
           </div>
         </div>
 
-        {/* NAVIGATION "CONSTELLATION" (Liens restaurés & stylisés) */}
         <nav className="flex items-center gap-1 sm:gap-4 text-xs font-medium">
           <Link
             href="/journal"
@@ -95,15 +107,16 @@ export default function ChatPage() {
         </nav>
       </header>
 
-      {/* --- ZONE DE CHAT --- */}
-      <main className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin scrollbar-thumb-[#d4af37]/20 w-full max-w-4xl mx-auto">
-        {/* ÉCRAN D'ACCUEIL (Si vide) */}
+      {/* --- ZONE DE CHAT (Maintenant avec la REF sur le conteneur) --- */}
+      <main
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin scrollbar-thumb-[#d4af37]/20 w-full max-w-4xl mx-auto scroll-smooth"
+      >
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center px-4 animate-fade-in">
             <div className="w-20 h-20 bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] border border-[#d4af37]/30 rounded-full flex items-center justify-center mb-6 text-4xl shadow-2xl animate-pulse-slow">
               ✨
             </div>
-            {/* CORRECTION GUILLEMETS (Error 1, 2, 3, 4) */}
             <p className="text-lg md:text-xl font-serif text-gray-300 max-w-md leading-relaxed mb-8">
               &quot;Kwabo. Je suis l&apos;esprit de la mémoire.{" "}
               <br className="hidden sm:block" />
@@ -111,7 +124,6 @@ export default function ChatPage() {
               divinités.&quot;
             </p>
 
-            {/* Suggestions Chips */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-md">
               {suggestions.map((sug, i) => (
                 <button
@@ -129,7 +141,6 @@ export default function ChatPage() {
           </div>
         )}
 
-        {/* LISTE DES MESSAGES */}
         {messages.map((m) => (
           <div
             key={m.id}
@@ -144,7 +155,6 @@ export default function ChatPage() {
                   : "bg-[#1a1a1a] border border-[#333] text-gray-200 rounded-tl-none"
               }`}
             >
-              {/* RENDU MARKDOWN */}
               <ReactMarkdown
                 components={{
                   p: ({ children }) => (
@@ -208,7 +218,6 @@ export default function ChatPage() {
           </div>
         ))}
 
-        {/* LOADER */}
         {isLoading && (
           <div className="flex justify-start w-full animate-pulse">
             <div className="bg-[#1a1a1a] border border-[#333] px-5 py-4 rounded-2xl rounded-tl-none flex items-center gap-1.5">
@@ -219,14 +228,13 @@ export default function ChatPage() {
           </div>
         )}
 
-        {/* ERREURS */}
         {error && (
           <div className="p-3 rounded-lg bg-red-900/20 border border-red-800 text-red-400 text-xs text-center mx-auto max-w-sm">
             Le lien avec les esprits est instable. Vérifiez votre connexion.
           </div>
         )}
 
-        <div ref={messagesEndRef} className="h-4" />
+        {/* On a supprimé le div vide ici car on scrolle le conteneur directement */}
       </main>
 
       {/* --- INPUT AREA --- */}
@@ -252,7 +260,6 @@ export default function ChatPage() {
             type="submit"
             disabled={isLoading || !input.trim()}
             className="absolute right-2 bottom-2 bg-[#d4af37] hover:bg-[#b89628] disabled:bg-[#333] disabled:text-gray-500 text-black w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-[0_0_15px_rgba(212,175,55,0.3)] hover:shadow-[0_0_20px_rgba(212,175,55,0.5)]"
-            /* CORRECTION ACCESSIBILITÉ (Error 5) */
             aria-label="Envoyer le message"
             title="Envoyer le message"
           >
