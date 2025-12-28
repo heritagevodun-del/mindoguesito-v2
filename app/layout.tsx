@@ -13,7 +13,7 @@ export const viewport: Viewport = {
 
 // 2. METADATA
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.heritagevodun.com"),
+  metadataBase: new URL("https://www.mindoguesito.com/"),
   title: {
     default: "Mindoguesito | Gardien des Savoirs & de l'Héritage Vodun",
     template: "%s | Mindoguesito",
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     siteName: "Mindoguesito",
     locale: "fr_BJ",
     type: "website",
-    images: [{ url: "/og-image.jpg", width: 1200, height: 630 }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
 };
 
@@ -62,7 +62,7 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "WebSite",
               name: "MINDOGUESITO",
-              url: "https://www.heritagevodun.com",
+              url: "https://www.mindoguesito.com/",
               description:
                 "Intelligence artificielle dédiée à la transmission du patrimoine Vodun.",
               publisher: {
@@ -70,7 +70,7 @@ export default function RootLayout({
                 name: "Héritage Vodun",
                 logo: {
                   "@type": "ImageObject",
-                  url: "https://www.heritagevodun.com/logo.png",
+                  url: "https://www.mindoguesito.com/logo.png",
                 },
               },
             }),
