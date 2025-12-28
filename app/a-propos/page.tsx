@@ -26,7 +26,7 @@ export default function AboutPage() {
         >
           <span>✨</span>
           <span className="group-hover:translate-x-1 transition-transform">
-            Parler à l&apos;Esprit
+            Parler au Guide
           </span>
         </Link>
       </nav>
