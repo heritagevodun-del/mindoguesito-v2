@@ -1,1 +1,52 @@
 @import "tailwindcss";
+
+/* --- 1. CONFIGURATION DU SCROLL (Anti-Vibration) --- */
+html, body {
+  scroll-behavior: smooth;
+  height: 100%; /* Important pour que le scroll fonctionne bien sur mobile */
+}
+
+/* Stabilisation du texte pour éviter les micro-sauts */
+p, li, span {
+  line-height: 1.6; /* Force un espacement constant et lisible */
+}
+
+/* --- 2. BARRE DE DÉFILEMENT DORÉE (Design Vodun) --- */
+/* Pour Chrome, Safari, Edge, Opera */
+::-webkit-scrollbar {
+  width: 6px;  /* Assez fin pour être élégant */
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a; /* Fond noir profond (comme le site) */
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.4); /* Or antique transparent */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.9); /* Or brillant au survol */
+}
+
+/* --- 3. ANIMATIONS FLUIDES --- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* Pulse lent pour le logo 'M' */
+@keyframes pulseSlow {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+}
+
+.animate-pulse-slow {
+  animation: pulseSlow 4s infinite ease-in-out;
+}

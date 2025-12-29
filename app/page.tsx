@@ -6,6 +6,14 @@ import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import TextareaAutosize from "react-textarea-autosize";
 
+// --- OPTIMISATION : On sort les données statiques du composant ---
+const SUGGESTIONS = [
+  "✨ Qui es-tu ?",
+  "🐍 L'histoire du Python",
+  "🔮 C'est quoi le Fâ ?",
+  "🛡️ Les Zangbeto",
+];
+
 export default function ChatPage() {
   const {
     messages,
@@ -22,33 +30,40 @@ export default function ChatPage() {
     },
   });
 
-  // CHANGEMENT 1 : On cible le conteneur principal (main) et non plus un div vide
   const scrollContainerRef = useRef<HTMLElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
-  // CHANGEMENT 2 : Fonction de scroll intelligente
+  // --- FIX : LA FONCTION ANTI-VIBRATION ---
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
     const lastMessage = messages[messages.length - 1];
-
-    // Si pas de message, on ne fait rien
     if (!lastMessage) return;
 
-    // Si c'est l'utilisateur qui vient d'envoyer -> Animation DOUCE pour l'effet "Waouh"
+    // Calcul pour savoir si l'utilisateur est déjà en bas (à 150px près)
+    const isAtBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight <
+      150;
+
+    // CAS 1 : C'est l'utilisateur qui vient d'envoyer un message
+    // => On force le scroll fluide vers le bas pour l'effet "Waouh"
     if (lastMessage.role === "user") {
       container.scrollTo({
         top: container.scrollHeight,
         behavior: "smooth",
       });
     }
-    // Si c'est l'IA qui écrit (Streaming) -> Scroll INSTANTANÉ (Auto)
-    // C'est ça qui empêche la vibration. Le texte pousse l'écran sans le faire trembler.
-    else {
-      container.scrollTop = container.scrollHeight;
+    // CAS 2 : L'IA est en train d'écrire (Streaming)
+    // => On ne scroll QUE si l'utilisateur était déjà en bas.
+    // => IMPORTANT : On utilise 'auto' (instantané) et pas 'smooth' pour éviter la vibration.
+    else if (isAtBottom) {
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: "auto", // <--- C'est ICI que la vibration est tuée
+      });
     }
-  }, [messages]);
+  }, [messages]); // Se déclenche à chaque lettre reçue
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -58,13 +73,6 @@ export default function ChatPage() {
       }
     }
   };
-
-  const suggestions = [
-    "✨ Qui es-tu ?",
-    "🐍 L'histoire du Python",
-    "🔮 C'est quoi le Fâ ?",
-    "🛡️ Les Zangbeto",
-  ];
 
   return (
     <div className="flex flex-col h-[100dvh] overflow-hidden bg-[#0a0a0a] text-gray-100 font-sans selection:bg-[#d4af37] selection:text-black">
@@ -107,10 +115,11 @@ export default function ChatPage() {
         </nav>
       </header>
 
-      {/* --- ZONE DE CHAT (Maintenant avec la REF sur le conteneur) --- */}
+      {/* --- ZONE DE CHAT --- */}
+      {/* Note: J'ai retiré 'scroll-smooth' de Tailwind ici car on le gère en JS maintenant */}
       <main
         ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin scrollbar-thumb-[#d4af37]/20 w-full max-w-4xl mx-auto scroll-smooth"
+        className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin scrollbar-thumb-[#d4af37]/20 w-full max-w-4xl mx-auto"
       >
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center px-4 animate-fade-in">
@@ -125,7 +134,7 @@ export default function ChatPage() {
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-md">
-              {suggestions.map((sug, i) => (
+              {SUGGESTIONS.map((sug, i) => (
                 <button
                   key={i}
                   onClick={() => append({ role: "user", content: sug })}
@@ -233,8 +242,6 @@ export default function ChatPage() {
             Le lien avec les esprits est instable. Vérifiez votre connexion.
           </div>
         )}
-
-        {/* On a supprimé le div vide ici car on scrolle le conteneur directement */}
       </main>
 
       {/* --- INPUT AREA --- */}
@@ -260,8 +267,7 @@ export default function ChatPage() {
             type="submit"
             disabled={isLoading || !input.trim()}
             className="absolute right-2 bottom-2 bg-[#d4af37] hover:bg-[#b89628] disabled:bg-[#333] disabled:text-gray-500 text-black w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-[0_0_15px_rgba(212,175,55,0.3)] hover:shadow-[0_0_20px_rgba(212,175,55,0.5)]"
-            aria-label="Envoyer le message"
-            title="Envoyer le message"
+            aria-label="Envoyer"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
