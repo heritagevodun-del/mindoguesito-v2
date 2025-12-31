@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Mindoguesito | Gardien Numérique du Temple",
     description: "Dialoguez avec l'esprit de la tradition Vodun.",
-    url: "https://www.heritagevodun.com",
+    url: "https://www.mindoguesito.com/",
     siteName: "Mindoguesito",
     locale: "fr_BJ",
     type: "website",
