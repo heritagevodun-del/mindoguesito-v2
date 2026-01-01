@@ -1,12 +1,13 @@
 "use client";
 
 import { useChat } from "ai/react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import TextareaAutosize from "react-textarea-autosize";
+import { Volume2, StopCircle } from "lucide-react";
 
-// --- OPTIMISATION : On sort les données statiques du composant ---
+// --- CONSTANTES ---
 const SUGGESTIONS = [
   "✨ Qui es-tu ?",
   "🐍 L'histoire du Python",
@@ -23,6 +24,7 @@ export default function ChatPage() {
     isLoading,
     error,
     append,
+    reload,
   } = useChat({
     api: "/api/chat",
     onError: (err) => {
@@ -33,7 +35,99 @@ export default function ChatPage() {
   const scrollContainerRef = useRef<HTMLElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
-  // --- FIX : LA FONCTION ANTI-VIBRATION ---
+  // --- GESTION DE LA VOIX (TTS) ---
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [currentSpeakingId, setCurrentSpeakingId] = useState<string | null>(
+    null
+  );
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+
+  // 1. Charger les voix disponibles au démarrage
+  useEffect(() => {
+    const loadVoices = () => {
+      const available = window.speechSynthesis.getVoices();
+      setVoices(available);
+    };
+
+    loadVoices();
+
+    // Chrome charge les voix de manière asynchrone
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+  }, []);
+
+  // 2. Fonction pour lire le message (AVEC FILTRE ANTI-BRUIT)
+  const speakMessage = (text: string, id: string) => {
+    // Si ça parle déjà, on coupe
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      setCurrentSpeakingId(null);
+      // Si on clique sur le même bouton, on s'arrête là (Toggle)
+      if (currentSpeakingId === id) return;
+    }
+
+    // --- NETTOYAGE DU TEXTE ---
+    const cleanText = text
+      // Enlever les émojis (Plages Unicode courantes)
+      .replace(
+        /[\u{1F600}-\u{1F6FF}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F000}-\u{1F0FF}\u{1F018}-\u{1F270}\u{2934}\u{2935}\u{203C}\u{2049}\u{00A9}\u{00AE}\u{2122}\u{2139}\u{2194}-\u{2199}\u{2328}\u{3030}\u{303D}]/gu,
+        ""
+      )
+      // Enlever le Markdown basique (*, #, _, `)
+      .replace(/[*_~`#]/g, "")
+      // Enlever les liens [Texte](URL) -> on garde juste "Texte"
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+      // Nettoyer les espaces multiples crées par les suppressions
+      .replace(/\s+/g, " ")
+      .trim();
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+
+    // --- SÉLECTION DE VOIX ---
+    const frVoices = voices.filter((v) => v.lang.startsWith("fr"));
+
+    // Priorité : Google Français > Thomas (Mac) > Paul (Win) > Voix Homme générique
+    const preferredVoice = frVoices.find(
+      (v) =>
+        v.name.includes("Google") ||
+        v.name.includes("Thomas") ||
+        v.name.includes("Paul") ||
+        v.name.includes("Male")
+    );
+
+    if (preferredVoice) {
+      utterance.voice = preferredVoice;
+    } else if (frVoices.length > 0) {
+      utterance.voice = frVoices[0];
+    }
+
+    utterance.lang = "fr-FR";
+
+    // --- RÉGLAGES "VIEUX SAGE" ---
+    utterance.rate = 0.85; // Lent
+    utterance.pitch = 0.8; // Grave
+
+    utterance.onstart = () => {
+      setIsSpeaking(true);
+      setCurrentSpeakingId(id);
+    };
+
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      setCurrentSpeakingId(null);
+    };
+
+    utterance.onerror = () => {
+      setIsSpeaking(false);
+      setCurrentSpeakingId(null);
+    };
+
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // --- SCROLL ANTI-VIBRATION ---
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
@@ -41,33 +135,32 @@ export default function ChatPage() {
     const lastMessage = messages[messages.length - 1];
     if (!lastMessage) return;
 
-    // Calcul pour savoir si l'utilisateur est déjà en bas (à 150px près)
     const isAtBottom =
       container.scrollHeight - container.scrollTop - container.clientHeight <
       150;
 
-    // CAS 1 : C'est l'utilisateur qui vient d'envoyer un message
-    // => On force le scroll fluide vers le bas pour l'effet "Waouh"
     if (lastMessage.role === "user") {
       container.scrollTo({
         top: container.scrollHeight,
         behavior: "smooth",
       });
-    }
-    // CAS 2 : L'IA est en train d'écrire (Streaming)
-    // => On ne scroll QUE si l'utilisateur était déjà en bas.
-    // => IMPORTANT : On utilise 'auto' (instantané) et pas 'smooth' pour éviter la vibration.
-    else if (isAtBottom) {
+    } else if (isAtBottom) {
       container.scrollTo({
         top: container.scrollHeight,
-        behavior: "auto", // <--- C'est ICI que la vibration est tuée
+        behavior: "auto",
       });
     }
-  }, [messages]); // Se déclenche à chaque lettre reçue
+  }, [messages]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
+      // Arrêter la voix si on envoie un nouveau message
+      if (isSpeaking) {
+        window.speechSynthesis.cancel();
+        setIsSpeaking(false);
+        setCurrentSpeakingId(null);
+      }
       if (input.trim()) {
         formRef.current?.requestSubmit();
       }
@@ -116,7 +209,6 @@ export default function ChatPage() {
       </header>
 
       {/* --- ZONE DE CHAT --- */}
-      {/* Note: J'ai retiré 'scroll-smooth' de Tailwind ici car on le gère en JS maintenant */}
       <main
         ref={scrollContainerRef}
         className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin scrollbar-thumb-[#d4af37]/20 w-full max-w-4xl mx-auto"
@@ -161,7 +253,7 @@ export default function ChatPage() {
               className={`max-w-[85%] md:max-w-[80%] rounded-2xl px-5 py-4 shadow-lg text-[0.95rem] md:text-base leading-relaxed ${
                 m.role === "user"
                   ? "bg-[#d4af37] text-black rounded-tr-none font-medium"
-                  : "bg-[#1a1a1a] border border-[#333] text-gray-200 rounded-tl-none"
+                  : "bg-[#1a1a1a] border border-[#333] text-gray-200 rounded-tl-none relative group"
               }`}
             >
               <ReactMarkdown
@@ -223,6 +315,33 @@ export default function ChatPage() {
               >
                 {m.content}
               </ReactMarkdown>
+
+              {/* --- BOUTON VOCAL --- */}
+              {m.role !== "user" && !isLoading && (
+                <div className="mt-3 pt-3 border-t border-gray-800 flex items-center gap-3">
+                  <button
+                    onClick={() => speakMessage(m.content, m.id)}
+                    className={`flex items-center gap-2 text-xs font-medium px-2 py-1 rounded transition-colors ${
+                      currentSpeakingId === m.id
+                        ? "text-[#d4af37] bg-[#d4af37]/10"
+                        : "text-gray-500 hover:text-[#d4af37]"
+                    }`}
+                    title="Écouter la réponse"
+                  >
+                    {currentSpeakingId === m.id ? (
+                      <>
+                        <StopCircle size={14} className="animate-pulse" />
+                        Arrêter
+                      </>
+                    ) : (
+                      <>
+                        <Volume2 size={14} />
+                        Écouter
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         ))}
@@ -240,6 +359,12 @@ export default function ChatPage() {
         {error && (
           <div className="p-3 rounded-lg bg-red-900/20 border border-red-800 text-red-400 text-xs text-center mx-auto max-w-sm">
             Le lien avec les esprits est instable. Vérifiez votre connexion.
+            <button
+              onClick={() => reload()}
+              className="ml-2 underline hover:text-red-300"
+            >
+              Réessayer
+            </button>
           </div>
         )}
       </main>
