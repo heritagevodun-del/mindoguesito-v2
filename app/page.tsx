@@ -5,12 +5,21 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import TextareaAutosize from "react-textarea-autosize";
-import { Volume2, StopCircle } from "lucide-react";
+import {
+  Volume2,
+  StopCircle,
+  Menu,
+  X,
+  Book,
+  Sparkles,
+  User,
+  ExternalLink,
+} from "lucide-react";
 
 // --- CONSTANTES ---
 const SUGGESTIONS = [
   "✨ Qui es-tu ?",
-  "🐍 L'histoire du Python",
+  "🛠️ Que sais-tu faire ?",
   "🔮 C'est quoi le Fâ ?",
   "🛡️ Les Zangbeto",
 ];
@@ -35,6 +44,9 @@ export default function ChatPage() {
   const scrollContainerRef = useRef<HTMLElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
+  // --- GESTION DU MENU SIDEBAR ---
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   // --- GESTION DE LA VOIX (TTS) ---
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [currentSpeakingId, setCurrentSpeakingId] = useState<string | null>(
@@ -42,53 +54,37 @@ export default function ChatPage() {
   );
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
 
-  // 1. Charger les voix disponibles au démarrage
   useEffect(() => {
     const loadVoices = () => {
       const available = window.speechSynthesis.getVoices();
       setVoices(available);
     };
-
     loadVoices();
-
-    // Chrome charge les voix de manière asynchrone
     if (window.speechSynthesis.onvoiceschanged !== undefined) {
       window.speechSynthesis.onvoiceschanged = loadVoices;
     }
   }, []);
 
-  // 2. Fonction pour lire le message (AVEC FILTRE ANTI-BRUIT)
   const speakMessage = (text: string, id: string) => {
-    // Si ça parle déjà, on coupe
     if (window.speechSynthesis.speaking) {
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
       setCurrentSpeakingId(null);
-      // Si on clique sur le même bouton, on s'arrête là (Toggle)
       if (currentSpeakingId === id) return;
     }
 
-    // --- NETTOYAGE DU TEXTE ---
     const cleanText = text
-      // Enlever les émojis (Plages Unicode courantes)
       .replace(
         /[\u{1F600}-\u{1F6FF}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F000}-\u{1F0FF}\u{1F018}-\u{1F270}\u{2934}\u{2935}\u{203C}\u{2049}\u{00A9}\u{00AE}\u{2122}\u{2139}\u{2194}-\u{2199}\u{2328}\u{3030}\u{303D}]/gu,
         ""
       )
-      // Enlever le Markdown basique (*, #, _, `)
       .replace(/[*_~`#]/g, "")
-      // Enlever les liens [Texte](URL) -> on garde juste "Texte"
       .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-      // Nettoyer les espaces multiples crées par les suppressions
       .replace(/\s+/g, " ")
       .trim();
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
-
-    // --- SÉLECTION DE VOIX ---
     const frVoices = voices.filter((v) => v.lang.startsWith("fr"));
-
-    // Priorité : Google Français > Thomas (Mac) > Paul (Win) > Voix Homme générique
     const preferredVoice = frVoices.find(
       (v) =>
         v.name.includes("Google") ||
@@ -104,10 +100,8 @@ export default function ChatPage() {
     }
 
     utterance.lang = "fr-FR";
-
-    // --- RÉGLAGES "VIEUX SAGE" ---
-    utterance.rate = 0.85; // Lent
-    utterance.pitch = 0.8; // Grave
+    utterance.rate = 0.85;
+    utterance.pitch = 0.8;
 
     utterance.onstart = () => {
       setIsSpeaking(true);
@@ -127,7 +121,6 @@ export default function ChatPage() {
     window.speechSynthesis.speak(utterance);
   };
 
-  // --- SCROLL ANTI-VIBRATION ---
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
@@ -155,7 +148,6 @@ export default function ChatPage() {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      // Arrêter la voix si on envoie un nouveau message
       if (isSpeaking) {
         window.speechSynthesis.cancel();
         setIsSpeaking(false);
@@ -170,8 +162,17 @@ export default function ChatPage() {
   return (
     <div className="flex flex-col h-[100dvh] overflow-hidden bg-[#0a0a0a] text-gray-100 font-sans selection:bg-[#d4af37] selection:text-black">
       {/* --- HEADER --- */}
-      <header className="flex-none px-4 py-4 bg-[#0a0a0a]/95 backdrop-blur-md border-b border-[#d4af37]/20 flex items-center justify-between z-10">
+      <header className="flex-none px-4 py-4 bg-[#0a0a0a]/95 backdrop-blur-md border-b border-[#d4af37]/20 flex items-center justify-between z-20 relative">
         <div className="flex items-center gap-3">
+          {/* BOUTON HAMBURGER (Visible sur Mobile uniquement) */}
+          <button
+            className="md:hidden text-[#d4af37] p-1 hover:bg-white/5 rounded-md transition-colors"
+            onClick={() => setIsSidebarOpen(true)}
+            aria-label="Ouvrir le menu"
+          >
+            <Menu size={24} />
+          </button>
+
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#d4af37] to-[#8b4513] flex items-center justify-center text-black font-bold text-base shadow-[0_0_15px_rgba(212,175,55,0.3)]">
             M
           </div>
@@ -185,28 +186,111 @@ export default function ChatPage() {
           </div>
         </div>
 
-        <nav className="flex items-center gap-1 sm:gap-4 text-xs font-medium">
+        {/* --- NAVIGATION DESKTOP (Caché sur Mobile) --- */}
+        <nav className="hidden md:flex items-center gap-4 text-xs font-medium">
           <Link
             href="/journal"
-            className="text-gray-400 hover:text-[#d4af37] transition-colors py-2 px-2 sm:px-3 rounded-md hover:bg-white/5"
+            className="text-gray-400 hover:text-[#d4af37] transition-colors py-2 px-3 rounded-md hover:bg-white/5 flex items-center gap-2"
           >
-            Journal
+            <Book size={14} /> Journal
+          </Link>
+          <Link
+            href="/fonctionnalites"
+            className="text-gray-400 hover:text-[#d4af37] transition-colors py-2 px-3 rounded-md hover:bg-white/5 flex items-center gap-2"
+          >
+            <Sparkles size={14} /> Fonctionnalités
           </Link>
           <Link
             href="/a-propos"
-            className="text-gray-400 hover:text-[#d4af37] transition-colors py-2 px-2 sm:px-3 rounded-md hover:bg-white/5"
+            className="text-gray-400 hover:text-[#d4af37] transition-colors py-2 px-3 rounded-md hover:bg-white/5 flex items-center gap-2"
           >
-            À Propos
+            <User size={14} /> À Propos
           </Link>
-          <div className="h-4 w-[1px] bg-gray-700 mx-1 hidden sm:block"></div>
+          <div className="h-4 w-[1px] bg-gray-700 mx-1"></div>
           <Link
             href="https://www.heritagevodun.com"
-            className="text-[#d4af37] hover:text-white border border-[#d4af37]/30 hover:bg-[#d4af37]/10 transition-all py-1.5 px-3 rounded-full"
+            target="_blank"
+            className="text-[#d4af37] hover:text-white border border-[#d4af37]/30 hover:bg-[#d4af37]/10 transition-all py-1.5 px-3 rounded-full flex items-center gap-2"
           >
-            Site Principal
+            Site Principal <ExternalLink size={12} />
           </Link>
         </nav>
       </header>
+
+      {/* --- SIDEBAR MOBILE (OVERLAY + DRAWER) --- */}
+      {/* 1. Le fond sombre (Backdrop) */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 md:hidden animate-fade-in"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* 2. Le Panneau Latéral (Sidebar) */}
+      <div
+        className={`fixed top-0 left-0 h-full w-[280px] bg-[#0f0f0f] border-r border-[#d4af37]/20 z-40 transform transition-transform duration-300 ease-in-out md:hidden flex flex-col shadow-2xl ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {/* Header du Sidebar */}
+        <div className="flex items-center justify-between p-4 border-b border-[#333]">
+          <h2 className="font-serif font-bold text-[#d4af37] tracking-wide">
+            MINDOGUESITO
+          </h2>
+          <button
+            onClick={() => setIsSidebarOpen(false)}
+            className="text-gray-400 hover:text-white p-1"
+            aria-label="Fermer le menu"
+          >
+            <X size={24} />
+          </button>
+        </div>
+
+        {/* Liens du Sidebar */}
+        <div className="flex flex-col p-4 gap-2">
+          <Link
+            href="/journal"
+            onClick={() => setIsSidebarOpen(false)}
+            className="text-gray-300 hover:text-[#d4af37] hover:bg-white/5 p-3 rounded-lg transition-colors flex items-center gap-3"
+          >
+            <Book size={18} className="text-[#d4af37]" />
+            <span className="font-medium">Journal</span>
+          </Link>
+          <Link
+            href="/fonctionnalites"
+            onClick={() => setIsSidebarOpen(false)}
+            className="text-gray-300 hover:text-[#d4af37] hover:bg-white/5 p-3 rounded-lg transition-colors flex items-center gap-3"
+          >
+            <Sparkles size={18} className="text-[#d4af37]" />
+            <span className="font-medium">Fonctionnalités</span>
+          </Link>
+          <Link
+            href="/a-propos"
+            onClick={() => setIsSidebarOpen(false)}
+            className="text-gray-300 hover:text-[#d4af37] hover:bg-white/5 p-3 rounded-lg transition-colors flex items-center gap-3"
+          >
+            <User size={18} className="text-[#d4af37]" />
+            <span className="font-medium">À Propos</span>
+          </Link>
+
+          <div className="h-[1px] w-full bg-gray-800 my-4"></div>
+
+          <Link
+            href="https://www.heritagevodun.com"
+            target="_blank"
+            className="text-[#d4af37] bg-[#d4af37]/10 font-medium p-3 rounded-lg border border-[#d4af37]/20 text-center hover:bg-[#d4af37]/20 transition-all flex items-center justify-center gap-2"
+          >
+            Visiter Héritage Vodun <ExternalLink size={16} />
+          </Link>
+        </div>
+
+        {/* Footer du Sidebar */}
+        <div className="mt-auto p-4 border-t border-[#333]">
+          <p className="text-[10px] text-gray-500 text-center">
+            © 2026 Mindoguesito IA <br /> Gardien des Savoirs
+          </p>
+        </div>
+      </div>
 
       {/* --- ZONE DE CHAT --- */}
       <main
