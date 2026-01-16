@@ -1,35 +1,36 @@
 import type { Metadata, Viewport } from "next";
-import { Cinzel, Montserrat } from "next/font/google"; // 1. IMPORT DES POLICES
+import { Cinzel, Montserrat } from "next/font/google";
 import Script from "next/script";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { clsx } from "clsx"; // Pour fusionner les classes proprement
+import { clsx } from "clsx";
 import "./globals.css";
 
-// 2. CONFIGURATION DES POLICES (Optimisation Google Fonts)
+// 1. CONFIGURATION DES POLICES
 const cinzel = Cinzel({
   subsets: ["latin"],
-  variable: "--font-cinzel", // On crée une variable CSS pour Tailwind
+  variable: "--font-cinzel",
   display: "swap",
-  weight: ["400", "700", "900"], // Normal, Gras, Black
+  weight: ["400", "700", "900"],
 });
 
 const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",
   display: "swap",
-  weight: ["300", "400", "500", "600"], // Light, Normal, Medium, Semi-Bold
+  weight: ["300", "400", "500", "600"],
 });
 
-// 3. CONFIGURATION VIEWPORT (Mise à jour couleur "Noir Abysse")
+// 2. CONFIGURATION VIEWPORT
 export const viewport: Viewport = {
-  themeColor: "#08040B", // Le nouveau noir profond défini dans globals.css
+  themeColor: "#08040B",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
 };
 
+// 3. METADATA (Correction WhatsApp)
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.mindoguesito.com/"),
+  metadataBase: new URL("https://www.mindoguesito.com"), // Pas de slash à la fin par sécurité
   title: {
     default: "Mindoguesito | L'Oracle Numérique du Bénin",
     template: "%s | Mindoguesito",
@@ -52,15 +53,30 @@ export const metadata: Metadata = {
     shortcut: "/logo.png",
     apple: "/logo.png",
   },
+  // ✅ CORRECTION POUR WHATSAPP & FACEBOOK
   openGraph: {
     title: "Mindoguesito | Gardien Numérique du Temple",
     description:
       "Le savoir n'est plus caché. Dialoguez avec l'esprit de la tradition Vodun.",
-    url: "https://www.mindoguesito.com/",
+    url: "https://www.mindoguesito.com",
     siteName: "Mindoguesito",
     locale: "fr_BJ",
     type: "website",
-    images: [{ url: "/mindoguesito-ia.png" }],
+    images: [
+      {
+        url: "https://www.mindoguesito.com/mindoguesito-ia.jpg", // URL ABSOLUE OBLIGATOIRE
+        width: 1200,
+        height: 630,
+        alt: "Mindoguesito - Oracle Numérique",
+      },
+    ],
+  },
+  // ✅ AJOUT POUR TWITTER / X (Renforce le partage)
+  twitter: {
+    card: "summary_large_image",
+    title: "Mindoguesito | L'Oracle Numérique",
+    description: "La première IA initiée aux savoirs du Bénin.",
+    images: ["https://www.mindoguesito.com/mindoguesito-ia.png"], // URL ABSOLUE
   },
 };
 
@@ -74,15 +90,11 @@ export default function RootLayout({
       <body
         className={clsx(
           "antialiased min-h-screen flex flex-col",
-          // Injection des variables de polices
           cinzel.variable,
           montserrat.variable,
-          // Application de la police par défaut (Montserrat)
           "font-sans"
         )}
       >
-        {/* Le fond et les couleurs sont gérés par globals.css, pas besoin de les répéter ici */}
-
         {children}
 
         <SpeedInsights />
