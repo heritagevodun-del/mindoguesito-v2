@@ -1,4 +1,4 @@
-// src/app/journal/data/entries.ts
+// app/journal/data/entries.ts
 
 export interface JournalEntry {
   id: string;
