@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { motion, Variants } from "framer-motion"; // ✅ Ajout de 'Variants' pour corriger l'erreur
+import { motion, Variants } from "framer-motion";
 import {
   MessageSquare,
   Library,
@@ -16,7 +16,7 @@ import {
 // ✅ IMPORT DU LOGO
 import Logo from "@/components/Logo";
 
-// ✅ TYPAGE EXPLICITE (C'est ça qui corrige les lignes rouges)
+// ✅ TYPAGE EXPLICITE
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
@@ -38,16 +38,17 @@ const itemVariants: Variants = {
 
 export default function FeaturesPage() {
   return (
-    <div className="relative min-h-screen bg-void text-gray-100 font-sans selection:bg-gold/30 selection:text-white flex flex-col overflow-hidden">
-      {/* 1. FOND DYNAMIQUE */}
-      <div className="absolute inset-0 pointer-events-none z-0">
+    // ⚠️ CORRECTION ICI : 'overflow-x-hidden' permet le scroll vertical mais bloque l'horizontal
+    <div className="relative min-h-screen bg-void text-gray-100 font-sans selection:bg-gold/30 selection:text-white flex flex-col overflow-x-hidden">
+      {/* 1. FOND DYNAMIQUE (FIXED pour qu'il suive l'écran) */}
+      <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[-10%] right-[-10%] w-[50vh] h-[50vh] bg-spirit/10 blur-[100px] rounded-full mix-blend-screen" />
         <div className="absolute bottom-[-10%] left-[-10%] w-[40vh] h-[40vh] bg-gold/5 blur-[80px] rounded-full mix-blend-screen" />
         <div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] brightness-100 contrast-150"></div>
       </div>
 
-      {/* --- HEADER --- */}
-      <header className="px-6 py-5 border-b border-white/5 flex items-center justify-between sticky top-0 bg-void/80 backdrop-blur-xl z-20 shadow-sm">
+      {/* --- HEADER (Sticky) --- */}
+      <header className="px-6 py-5 border-b border-white/5 flex items-center justify-between sticky top-0 bg-void/80 backdrop-blur-xl z-50 shadow-sm">
         <Link
           href="/"
           className="flex items-center gap-2 text-gray-400 hover:text-gold transition-colors group"
@@ -91,9 +92,9 @@ export default function FeaturesPage() {
           </h1>
 
           <p className="text-gray-400 max-w-2xl mx-auto text-lg leading-relaxed font-sans">
-            Mindoguesito fusionne la puissance de GPT-4 avec la sagesse
-            ancestrale pour vous guider avec précision et respect dans
-            l&apos;univers du Vodun.
+            Mindoguesito fusionne la connaissance de l&apos;histoire du Bénin
+            avec la sagesse ancestrale pour vous guider avec précision et
+            respect dans l&apos;univers du Vodun.
           </p>
         </motion.div>
 

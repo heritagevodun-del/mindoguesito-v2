@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     siteName: "Mindoguesito",
     locale: "fr_BJ",
     type: "website",
-    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+    images: [{ url: "/mindoguesito-ia.png" }],
   },
 };
 
