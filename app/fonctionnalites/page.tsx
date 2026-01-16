@@ -38,16 +38,16 @@ const itemVariants: Variants = {
 
 export default function FeaturesPage() {
   return (
-    // ⚠️ CORRECTION ICI : 'overflow-x-hidden' permet le scroll vertical mais bloque l'horizontal
+    // ⚠️ 'overflow-x-hidden' pour la stabilité
     <div className="relative min-h-screen bg-void text-gray-100 font-sans selection:bg-gold/30 selection:text-white flex flex-col overflow-x-hidden">
-      {/* 1. FOND DYNAMIQUE (FIXED pour qu'il suive l'écran) */}
+      {/* 1. FOND DYNAMIQUE */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[-10%] right-[-10%] w-[50vh] h-[50vh] bg-spirit/10 blur-[100px] rounded-full mix-blend-screen" />
         <div className="absolute bottom-[-10%] left-[-10%] w-[40vh] h-[40vh] bg-gold/5 blur-[80px] rounded-full mix-blend-screen" />
         <div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] brightness-100 contrast-150"></div>
       </div>
 
-      {/* --- HEADER (Sticky) --- */}
+      {/* --- HEADER --- */}
       <header className="px-6 py-5 border-b border-white/5 flex items-center justify-between sticky top-0 bg-void/80 backdrop-blur-xl z-50 shadow-sm">
         <Link
           href="/"
@@ -92,9 +92,9 @@ export default function FeaturesPage() {
           </h1>
 
           <p className="text-gray-400 max-w-2xl mx-auto text-lg leading-relaxed font-sans">
-            Mindoguesito fusionne la connaissance de l&apos;histoire du Bénin
-            avec la sagesse ancestrale pour vous guider avec précision et
-            respect dans l&apos;univers du Vodun.
+            Mindoguesito fusionne la puissance de GPT-4 avec la sagesse
+            ancestrale pour vous guider avec précision et respect dans
+            l&apos;univers du Vodun.
           </p>
         </motion.div>
 
@@ -211,9 +211,11 @@ export default function FeaturesPage() {
               première question à l&apos;esprit numérique.
             </p>
 
+            {/* --- BOUTON CORRIGÉ --- */}
+            {/* Défaut: Fond noir / Texte Or | Hover: Fond Or / Texte Noir */}
             <Link
               href="/"
-              className="inline-flex items-center gap-3 bg-gold text-black font-bold py-4 px-10 rounded-full hover:bg-[#fceeb5] transition-all transform hover:scale-105 shadow-[0_0_30px_rgba(212,175,55,0.3)] text-lg"
+              className="inline-flex items-center gap-3 bg-surface border border-gold/50 text-gold font-bold py-4 px-10 rounded-full hover:bg-gold hover:text-black transition-all transform hover:scale-105 shadow-[0_0_30px_rgba(212,175,55,0.2)] text-lg"
             >
               <MessageSquare size={20} />
               Entrer dans le Temple
