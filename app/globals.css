@@ -1,52 +1,127 @@
 @import "tailwindcss";
 
-/* --- 1. CONFIGURATION DU SCROLL (Anti-Vibration) --- */
+/* =========================================
+   1. CHARTE GRAPHIQUE "VODUN SOUL"
+   Définition des couleurs et ambiances
+   ========================================= */
+:root {
+  /* --- COULEURS FONDAMENTALES (RGB pour gérer l'opacité) --- */
+  /* Noir Abysse (Fond principal) - Teinté légèrement de violet/terre */
+  --color-void: 8 4 11; 
+  /* Or Antique (Héritage) */
+  --color-gold: 212 175 55;
+  /* Terre de Barre / Sang (Racines) */
+  --color-terra: 138 44 27;
+  /* Cyan Data (L'IA) */
+  --color-tech: 0 243 255;
+  /* Violet Esprit (Mysticisme) */
+  --color-spirit: 138 43 226;
+  
+  /* --- SURFACE & TEXTE --- */
+  --color-surface: 20 20 25; /* Cartes, Sidebars */
+  --color-text-main: 240 240 240; /* Blanc cassé lisible */
+  --color-text-muted: 160 160 160; /* Gris doux */
+}
+
+/* =========================================
+   2. CONFIGURATION GLOBALE
+   ========================================= */
 html, body {
+  height: 100%;
   scroll-behavior: smooth;
-  height: 100%; /* Important pour que le scroll fonctionne bien sur mobile */
+  background-color: rgb(var(--color-void));
+  color: rgb(var(--color-text-main));
+  /* Lissage des polices pour un rendu "Apple/Premium" */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Stabilisation du texte pour éviter les micro-sauts */
-p, li, span {
-  line-height: 1.6; /* Force un espacement constant et lisible */
+/* Sélection de texte (Surbrillance) en Or */
+::selection {
+  background: rgba(var(--color-gold), 0.3);
+  color: rgb(var(--color-gold));
 }
 
-/* --- 2. BARRE DE DÉFILEMENT DORÉE (Design Vodun) --- */
-/* Pour Chrome, Safari, Edge, Opera */
+/* =========================================
+   3. BARRE DE DÉFILEMENT (SCROLLBAR) CUSTOM
+   ========================================= */
 ::-webkit-scrollbar {
-  width: 6px;  /* Assez fin pour être élégant */
+  width: 6px;
   height: 6px;
 }
-
 ::-webkit-scrollbar-track {
-  background: #0a0a0a; /* Fond noir profond (comme le site) */
+  background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: rgba(212, 175, 55, 0.4); /* Or antique transparent */
+  background: rgba(var(--color-gold), 0.2);
   border-radius: 10px;
+  transition: background 0.3s;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(212, 175, 55, 0.9); /* Or brillant au survol */
+  background: rgba(var(--color-gold), 0.6);
 }
 
-/* --- 3. ANIMATIONS FLUIDES --- */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
+/* =========================================
+   4. UTILITAIRES SPÉCIAUX (CLASSES PERSO)
+   ========================================= */
+
+/* --- Effet Verre (Glassmorphism) pour les panneaux --- */
+.glass-panel {
+  background: rgba(20, 20, 25, 0.4);
+  /* D'abord la version -webkit- (pour Safari/Apple) */
+  -webkit-backdrop-filter: blur(12px);
+  /* Ensuite la version standard */
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
+/* --- Effet Dégradé Texte "Or Divin" --- */
+.text-gradient-gold {
+  background: linear-gradient(to bottom, #fceeb5, rgb(var(--color-gold)), #996515);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-/* Pulse lent pour le logo 'M' */
-@keyframes pulseSlow {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.05); opacity: 0.8; }
+/* --- Effet de Glow (Lueur) --- */
+.glow-tech {
+  box-shadow: 0 0 15px rgba(var(--color-tech), 0.3);
+}
+.glow-gold {
+  box-shadow: 0 0 15px rgba(var(--color-gold), 0.2);
 }
 
-.animate-pulse-slow {
-  animation: pulseSlow 4s infinite ease-in-out;
+/* =========================================
+   5. STYLES DU CHAT (MARKDOWN IA)
+   Pour que les réponses de l'IA soient belles
+   ========================================= */
+.prose-ai {
+  line-height: 1.7;
+  font-size: 0.95rem;
+}
+.prose-ai p { margin-bottom: 1rem; }
+.prose-ai strong { color: rgb(var(--color-gold)); font-weight: 600; }
+.prose-ai ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; color: rgb(var(--color-text-muted)); }
+.prose-ai ol { list-style-type: decimal; padding-left: 1.5rem; margin-bottom: 1rem; }
+.prose-ai code { 
+  background: rgba(255,255,255,0.1); 
+  padding: 0.2rem 0.4rem; 
+  border-radius: 4px; 
+  font-family: monospace; 
+  font-size: 0.85em;
+  color: rgb(var(--color-tech));
+}
+.prose-ai pre {
+  background: #111;
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  border: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 1rem;
+}
+.prose-ai h1, .prose-ai h2, .prose-ai h3 {
+  color: white;
+  margin-top: 1.5rem;
+  margin-bottom: 0.8rem;
+  font-weight: 700;
 }
