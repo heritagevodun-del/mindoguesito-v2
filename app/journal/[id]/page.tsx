@@ -15,7 +15,7 @@ import {
   Tag,
   User,
   Crown,
-  MessageSquare, // ✅ AJOUT DE MessageSquare ICI
+  MessageSquare, // ✅ AJOUT DE L'IMPORT MANQUANT ICI
 } from "lucide-react";
 import { entries } from "../data/entries";
 
@@ -292,14 +292,14 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
           <p className="whitespace-pre-wrap">{entry.content}</p>
         </motion.div>
 
-        {/* FOOTER INTERACTIF */}
+        {/* FOOTER INTERACTIF (Style Corrigé Premium) */}
         <div className="mt-20 pt-10 border-t border-white/10 flex flex-col items-center gap-6">
           <p className="text-gray-500 italic text-sm font-serif">
             Cette histoire vous a interpellé ?
           </p>
           <Link
             href="/"
-            className="px-8 py-4 bg-gold text-black font-bold text-sm uppercase tracking-wider rounded-full hover:bg-[#fceeb5] transition-all hover:scale-105 shadow-[0_0_25px_rgba(212,175,55,0.25)] flex items-center gap-3"
+            className="inline-flex items-center gap-3 bg-surface border border-gold/30 text-gray-200 font-bold py-4 px-10 rounded-full hover:border-gold hover:text-gold transition-all transform hover:scale-105 shadow-[0_0_30px_rgba(212,175,55,0.1)] hover:shadow-[0_0_40px_rgba(212,175,55,0.3)] text-lg"
           >
             <MessageSquare size={18} /> Discuter de ce sujet
           </Link>
