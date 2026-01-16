@@ -1,23 +1,36 @@
 {
-  "name": "MINDOGUESITO",
+  "name": "Mindoguesito",
   "short_name": "Mindoguesito",
-  "description": "MINDOGUESITO est une intelligence artificielle dédiée à la transmission de la sagesse, de la mémoire et du patrimoine du Vodun.",
+  "description": "L'Oracle Numérique du Bénin et Gardien des Savoirs Vodun. MINDOGUESITO est une intelligence artificielle dédiée à la transmission de la sagesse, de la mémoire et du patrimoine du Vodun.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#fdfbf7",
-  "theme_color": "#fdfbf7",
   "orientation": "portrait",
-  "lang": "fr",
+  "background_color": "#08040B",
+  "theme_color": "#08040B",
   "icons": [
     {
       "src": "/logo.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/logo.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "750x750",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
