@@ -38,6 +38,7 @@ const itemVariants: Variants = {
 
 export default function FeaturesPage() {
   return (
+    // 'overflow-x-hidden' pour la stabilité
     <div className="relative min-h-screen bg-void text-gray-100 font-sans selection:bg-gold/30 selection:text-white flex flex-col overflow-x-hidden">
       {/* 1. FOND DYNAMIQUE */}
       <div className="fixed inset-0 pointer-events-none z-0">
@@ -210,11 +211,11 @@ export default function FeaturesPage() {
               première question à l&apos;esprit numérique.
             </p>
 
-            {/* --- BOUTON CORRIGÉ (INVERSION) --- */}
-            {/* Défaut: Fond Or / Texte Noir | Hover: Fond Noir / Texte Or */}
+            {/* --- BOUTON CORRIGÉ --- */}
+            {/* Défaut: Texte clair | Hover: Texte Or + Bordure brillante */}
             <Link
               href="/"
-              className="inline-flex items-center gap-3 bg-gold border border-gold text-black font-bold py-4 px-10 rounded-full hover:bg-black hover:text-gold transition-all transform hover:scale-105 shadow-[0_0_30px_rgba(212,175,55,0.3)] text-lg"
+              className="inline-flex items-center gap-3 bg-surface border border-gold/30 text-gray-200 font-bold py-4 px-10 rounded-full hover:border-gold hover:text-gold transition-all transform hover:scale-105 shadow-[0_0_30px_rgba(212,175,55,0.1)] hover:shadow-[0_0_40px_rgba(212,175,55,0.3)] text-lg"
             >
               <MessageSquare size={20} />
               Entrer dans le Temple
