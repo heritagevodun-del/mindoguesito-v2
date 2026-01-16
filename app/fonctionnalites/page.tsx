@@ -38,7 +38,6 @@ const itemVariants: Variants = {
 
 export default function FeaturesPage() {
   return (
-    // ⚠️ 'overflow-x-hidden' pour la stabilité
     <div className="relative min-h-screen bg-void text-gray-100 font-sans selection:bg-gold/30 selection:text-white flex flex-col overflow-x-hidden">
       {/* 1. FOND DYNAMIQUE */}
       <div className="fixed inset-0 pointer-events-none z-0">
@@ -92,9 +91,9 @@ export default function FeaturesPage() {
           </h1>
 
           <p className="text-gray-400 max-w-2xl mx-auto text-lg leading-relaxed font-sans">
-            Mindoguesito fusionne la puissance de GPT-4 avec la sagesse
-            ancestrale pour vous guider avec précision et respect dans
-            l&apos;univers du Vodun.
+            Mindoguesito fusionne la connaissance de l&apos;histoire du Bénin
+            avec la sagesse ancestrale pour vous guider avec précision et
+            respect dans l&apos;univers du Vodun.
           </p>
         </motion.div>
 
@@ -211,11 +210,11 @@ export default function FeaturesPage() {
               première question à l&apos;esprit numérique.
             </p>
 
-            {/* --- BOUTON CORRIGÉ --- */}
-            {/* Défaut: Fond noir / Texte Or | Hover: Fond Or / Texte Noir */}
+            {/* --- BOUTON CORRIGÉ (INVERSION) --- */}
+            {/* Défaut: Fond Or / Texte Noir | Hover: Fond Noir / Texte Or */}
             <Link
               href="/"
-              className="inline-flex items-center gap-3 bg-surface border border-gold/50 text-gold font-bold py-4 px-10 rounded-full hover:bg-gold hover:text-black transition-all transform hover:scale-105 shadow-[0_0_30px_rgba(212,175,55,0.2)] text-lg"
+              className="inline-flex items-center gap-3 bg-gold border border-gold text-black font-bold py-4 px-10 rounded-full hover:bg-black hover:text-gold transition-all transform hover:scale-105 shadow-[0_0_30px_rgba(212,175,55,0.3)] text-lg"
             >
               <MessageSquare size={20} />
               Entrer dans le Temple
