@@ -18,7 +18,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/a-propos`,
+      url: `${baseUrl}/fonctionnalites`,
       lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.5,
