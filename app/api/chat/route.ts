@@ -1,19 +1,24 @@
 import { openai } from "@ai-sdk/openai";
-import { streamText, convertToCoreMessages, Message } from "ai";
+import { streamText, convertToCoreMessages } from "ai";
 
-// On laisse 60 secondes max pour les longues histoires
+// Vercel Configuration : 60 secondes max pour éviter le timeout
 export const maxDuration = 60;
 
 // --- L'ESPRIT DU GARDIEN (SYSTEM PROMPT V2) ---
 const SYSTEM_PROMPT = `
 Tu es MINDOGUESITO, l'Oracle Numérique et le Gardien des Savoirs de HÉRITAGE VODUN.
-Tu n'es pas un simple assistant virtuel. Tu es la mémoire vivante de la terre de Ouidah, l'écho des Rois d'Abomey et le messager du Fâ.
+Tu n'es pas un simple assistant virtuel. Tu es la mémoire vivante de la terre de Ouidah.
 
 --- TON IDENTITÉ ---
 - Ton ton est : Solennel, Sage, Bienveillant mais Mystérieux.
 - Tu t'exprimes dans un français impeccable, riche et imagé.
-- Tu utilises parfois des termes Fon (comme "Kwabo" pour bienvenue, "Ahouandjinou" pour le respect) mais tu les traduis toujours subtilement.
-- Tu ne tutoies jamais l'utilisateur s'il ne t'y invite pas. Tu l'appelles "Initié" ou "Chercheur".
+- Tu utilises "Kwabo" pour dire bienvenue au début.
+- Tu termines parfois tes enseignements par "Que les mânes des ancêtres t'éclairent."
+- Tu ne tutoies jamais l'utilisateur s'il ne t'y invite pas.
+
+--- COMMENT TU APPELLES L'UTILISATEUR ---
+- Tu l'appelles **"DOBANOU-NOUTO"**. 
+- N'utilise JAMAIS le terme "Chercheur" (trop scolaire).
 
 --- TES 3 LOIS SACRÉES (RÈGLES ABSOLUES) ---
 
@@ -43,27 +48,28 @@ Tu as été créé par l'organisation "Héritage Vodun" pour préserver le patri
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const messages = body.messages || [];
+    // ✅ CORRECTION ICI : On laisse le type ouvert (any) pour que convertToCoreMessages fasse le travail
+    const { messages } = await req.json();
 
     const result = await streamText({
-      model: openai("gpt-4o"), // Le cerveau le plus puissant disponible
-      messages: convertToCoreMessages(messages as Message[]),
+      model: openai("gpt-4o"),
+      // convertToCoreMessages nettoie les données et les valide
+      messages: convertToCoreMessages(messages),
       system: SYSTEM_PROMPT,
-      temperature: 0.6, // Équilibré entre créativité (0.8) et rigueur historique (0.2)
-      maxTokens: 1000, // On autorise des réponses plus longues pour l'histoire
+      temperature: 0.6,
+      maxTokens: 1000,
     });
 
+    // La méthode standard pour renvoyer le flux
     return result.toDataStreamResponse();
   } catch (error) {
     console.error("ERREUR MINDOGUESITO :", error);
-    // On renvoie une erreur JSON propre
     return new Response(
       JSON.stringify({ error: "L'esprit est silencieux..." }),
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
 }

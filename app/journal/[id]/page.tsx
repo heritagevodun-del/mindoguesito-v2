@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+// 1. AJOUT DE L'IMPORT 'use' (Spécifique React 19)
+import { useState, use } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,15 +16,25 @@ import {
   Tag,
   User,
   Crown,
-  MessageSquare, // ✅ AJOUT DE L'IMPORT MANQUANT ICI
+  MessageSquare,
 } from "lucide-react";
 import { entries } from "../data/entries";
-
-// ✅ IMPORT DU LOGO
 import Logo from "@/components/Logo";
 
-export default function ArticlePage({ params }: { params: { id: string } }) {
-  const entry = entries.find((e) => e.id === params.id);
+// 2. DÉFINITION DU TYPE AVEC PROMISE
+// Dans Next.js 16, params est une Promise<{ id: string }>
+export default function ArticlePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  // 3. DÉBALLAGE DES PARAMS AVEC LE HOOK USE()
+  // C'est la méthode magique pour lire les params dans un Client Component
+  const { id } = use(params);
+
+  // Maintenant 'id' est une string utilisable
+  const entry = entries.find((e) => e.id === id);
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
 

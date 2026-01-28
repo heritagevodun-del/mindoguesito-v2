@@ -1,6 +1,6 @@
 "use client";
 
-import { useChat } from "ai/react";
+import { useChat } from "@ai-sdk/react";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
@@ -20,7 +20,6 @@ import {
   Crown,
 } from "lucide-react";
 
-// ✅ IMPORT DU LOGO
 import Logo from "@/components/Logo";
 
 // --- CONSTANTES ---
@@ -52,14 +51,14 @@ export default function ChatPage() {
 
   // 2. ÉTATS UI
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isAboutOpen, setIsAboutOpen] = useState(false); // État de la modale
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [currentSpeakingId, setCurrentSpeakingId] = useState<string | null>(
-    null
+    null,
   );
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
 
-  // 3. LOGIQUE VOCALE (Correction Phonétique)
+  // 3. LOGIQUE VOCALE
   useEffect(() => {
     const loadVoices = () => {
       const available = window.speechSynthesis.getVoices();
@@ -79,22 +78,20 @@ export default function ChatPage() {
       if (currentSpeakingId === id) return;
     }
 
-    // --- NETTOYAGE & PHONÉTIQUE ---
     let textToRead = text
       .replace(
         /[\u{1F600}-\u{1F6FF}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F000}-\u{1F0FF}\u{1F018}-\u{1F270}\u{2934}\u{2935}\u{203C}\u{2049}\u{00A9}\u{00AE}\u{2122}\u{2139}\u{2194}-\u{2199}\u{2328}\u{3030}\u{303D}]/gu,
-        ""
-      ) // Emojis
-      .replace(/[*_~`#]/g, "") // Markdown
-      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1") // Liens
+        "",
+      )
+      .replace(/[*_~`#]/g, "")
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
       .replace(/\s+/g, " ")
       .trim();
 
-    // ⚡️ LA CORRECTION MAGIQUE (Phonétique pour la synthèse vocale)
-    // On remplace le mot écrit par sa prononciation, sans que l'utilisateur le voie
     textToRead = textToRead.replace(/Mindoguesito/gi, "Minne-do-gué-si-to");
     textToRead = textToRead.replace(/Vodun/gi, "Vaudoun");
     textToRead = textToRead.replace(/Fâ/gi, "Fa");
+    textToRead = textToRead.replace(/DOBANOU-NOUTO/gi, "Do-ba-nou Nou-to");
 
     const utterance = new SpeechSynthesisUtterance(textToRead);
     const frVoices = voices.filter((v) => v.lang.startsWith("fr"));
@@ -102,7 +99,7 @@ export default function ChatPage() {
       (v) =>
         v.name.includes("Google") ||
         v.name.includes("Thomas") ||
-        v.name.includes("Male")
+        v.name.includes("Male"),
     );
 
     utterance.voice = preferredVoice || frVoices[0];
@@ -141,11 +138,11 @@ export default function ChatPage() {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       if (isSpeaking) window.speechSynthesis.cancel();
-      if (input.trim()) formRef.current?.requestSubmit();
+      // ✅ SÉCURITÉ ICI : input?
+      if (input?.trim()) formRef.current?.requestSubmit();
     }
   };
 
-  // --- RENDER ---
   return (
     <div className="relative flex flex-col h-[100dvh] w-full bg-void text-gray-100 font-sans overflow-hidden selection:bg-gold/30 selection:text-white">
       {/* 1. FOND DYNAMIQUE */}
@@ -195,8 +192,6 @@ export default function ChatPage() {
           >
             <Sparkles size={14} /> Pouvoirs
           </Link>
-
-          {/* BOUTON À PROPOS (Ouvre la modale) */}
           <button
             onClick={() => setIsAboutOpen(true)}
             className="text-gray-400 hover:text-gold py-1.5 px-3 rounded hover:bg-white/5 flex items-center gap-2 transition-colors"
@@ -204,7 +199,6 @@ export default function ChatPage() {
           >
             <User size={14} /> À Propos
           </button>
-
           <div className="h-4 w-[1px] bg-white/10 mx-2"></div>
           <Link
             href="https://www.heritagevodun.com"
@@ -262,7 +256,6 @@ export default function ChatPage() {
                 >
                   <Sparkles size={16} className="text-gold" /> Pouvoirs
                 </Link>
-                {/* À PROPOS MOBILE */}
                 <button
                   onClick={() => {
                     setIsSidebarOpen(false);
@@ -286,7 +279,7 @@ export default function ChatPage() {
         )}
       </AnimatePresence>
 
-      {/* 4. MODALE À PROPOS "WORLD CLASS" */}
+      {/* 4. MODALE À PROPOS */}
       <AnimatePresence>
         {isAboutOpen && (
           <>
@@ -297,7 +290,6 @@ export default function ChatPage() {
               className="fixed inset-0 bg-void/90 backdrop-blur-md z-[60] flex items-center justify-center p-4"
               onClick={() => setIsAboutOpen(false)}
             />
-
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -320,7 +312,6 @@ export default function ChatPage() {
                   <X size={20} />
                 </button>
               </div>
-
               <div className="p-6 space-y-8 text-gray-300 font-sans leading-relaxed">
                 <section>
                   <h3 className="flex items-center gap-2 text-white font-serif font-bold text-lg mb-3">
@@ -338,7 +329,6 @@ export default function ChatPage() {
                     patrimoine immatériel.
                   </p>
                 </section>
-
                 <section>
                   <h3 className="flex items-center gap-2 text-white font-serif font-bold text-lg mb-3">
                     <Crown size={18} className="text-gold" />
@@ -352,7 +342,6 @@ export default function ChatPage() {
                     pont entre le passé glorieux du Bénin et le futur numérique.
                   </p>
                 </section>
-
                 <div className="p-4 bg-gold/5 border border-gold/10 rounded-xl">
                   <h4 className="text-gold font-bold text-sm mb-1">
                     Note Importante
@@ -364,7 +353,6 @@ export default function ChatPage() {
                   </p>
                 </div>
               </div>
-
               <div className="p-6 border-t border-white/5 bg-black/20 text-center">
                 <p className="text-xs text-gray-500 uppercase tracking-widest">
                   Fait avec respect à Cotonou, Bénin
@@ -386,7 +374,6 @@ export default function ChatPage() {
               <div className="absolute inset-0 bg-gold/20 blur-2xl rounded-full opacity-50 animate-pulse-slow"></div>
               <Logo className="w-24 h-24 drop-shadow-2xl relative z-10" />
             </div>
-
             <h2 className="text-2xl md:text-3xl font-serif font-bold text-white mb-2">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold to-[#fceeb5]">
                 Kwabo
@@ -398,7 +385,6 @@ export default function ChatPage() {
               notre culture, notre histoire et nos traditions ancestrales. Je
               suis ici pour te guider.
             </p>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-md">
               {SUGGESTIONS.map((sug, i) => (
                 <button
@@ -521,14 +507,16 @@ export default function ChatPage() {
               minRows={1}
               maxRows={4}
               placeholder="Posez une question au Fâ..."
-              value={input}
+              // ✅ SÉCURITÉ ICI : input || ""
+              value={input || ""}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               disabled={isLoading}
             />
             <button
               type="submit"
-              disabled={isLoading || !input.trim()}
+              // ✅ SÉCURITÉ ICI : input?.trim()
+              disabled={isLoading || !input?.trim()}
               className="absolute right-2 bottom-2 p-1.5 bg-gold hover:bg-[#fceeb5] disabled:bg-gray-700 disabled:text-gray-500 text-black rounded-lg transition-all shadow-md active:scale-95"
               aria-label="Envoyer"
             >
