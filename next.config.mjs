@@ -2,21 +2,18 @@ import withPWAInit from "@ducanh2912/next-pwa";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // ✅ ON AJOUTE CECI POUR ÉVITER LES ERREURS DE LINT EN PROD
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  // Tes autres configs (images, etc.) iraient ici
+  // On laisse vide pour l'instant, la config eslint a été retirée
+  // car elle bloque Next.js 16 ici.
 };
 
-// Configuration du moteur PWA (Mode Application Native)
+// Configuration du moteur PWA
 const withPWA = withPWAInit({
-  dest: "public", // Dossier de destination du service worker
-  cacheOnFrontEndNav: true, // Cache agressif pour la rapidité
+  dest: "public",
+  cacheOnFrontEndNav: true,
   aggressiveFrontEndNavCaching: true,
-  reloadOnOnline: true, // Reconnexion automatique
-  swcMinify: true, // Optimisation du code
-  disable: process.env.NODE_ENV === "development", // Désactivé en dev pour ne pas vous gêner
+  reloadOnOnline: true,
+  swcMinify: true,
+  disable: process.env.NODE_ENV === "development",
   workboxOptions: {
     disableDevLogs: true,
   },
