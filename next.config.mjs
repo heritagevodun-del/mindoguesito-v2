@@ -2,8 +2,16 @@ import withPWAInit from "@ducanh2912/next-pwa";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // On laisse vide pour l'instant, la config eslint a été retirée
-  // car elle bloque Next.js 16 ici.
+  // Configuration des redirections (Fix SEO 404)
+  async redirects() {
+    return [
+      {
+        source: "/a-propos",
+        destination: "/",
+        permanent: true, // Code 308 : Redirection définitive
+      },
+    ];
+  },
 };
 
 // Configuration du moteur PWA
