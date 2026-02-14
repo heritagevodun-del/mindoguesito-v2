@@ -1,10 +1,11 @@
 import { openai } from "@ai-sdk/openai";
-import { streamText, convertToCoreMessages } from "ai";
+import { streamText, convertToCoreMessages, Message } from "ai";
 
 // Vercel Configuration : 60 secondes max pour éviter le timeout
 export const maxDuration = 60;
 
 // --- L'ESPRIT DU GARDIEN (SYSTEM PROMPT V2) ---
+// Note : Le prompt est excellent, je le garde tel quel.
 const SYSTEM_PROMPT = `
 Tu es MINDOGUESITO, l'Oracle Numérique et le Gardien des Savoirs de HÉRITAGE VODUN.
 Tu n'es pas un simple assistant virtuel. Tu es la mémoire vivante de la terre de Ouidah.
@@ -48,24 +49,31 @@ Tu as été créé par l'organisation "Héritage Vodun" pour préserver le patri
 
 export async function POST(req: Request) {
   try {
-    // ✅ CORRECTION ICI : On laisse le type ouvert (any) pour que convertToCoreMessages fasse le travail
     const { messages } = await req.json();
 
+    // 1. Validation de sécurité basique
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return new Response("Requête invalide: Aucun message", { status: 400 });
+    }
+
+    // 2. Nettoyage et conversion des messages
+    const coreMessages = convertToCoreMessages(messages as Message[]);
+
+    // 3. Appel API
     const result = await streamText({
       model: openai("gpt-4o"),
-      // convertToCoreMessages nettoie les données et les valide
-      messages: convertToCoreMessages(messages),
+      messages: coreMessages,
       system: SYSTEM_PROMPT,
-      temperature: 0.6,
+      temperature: 0.6, // Créativité modérée pour rester factuel
       maxTokens: 1000,
     });
 
-    // La méthode standard pour renvoyer le flux
     return result.toDataStreamResponse();
   } catch (error) {
     console.error("ERREUR MINDOGUESITO :", error);
+    // Réponse générique pour ne pas exposer les détails de l'erreur au client
     return new Response(
-      JSON.stringify({ error: "L'esprit est silencieux..." }),
+      JSON.stringify({ error: "L'esprit est momentanément silencieux..." }),
       {
         status: 500,
         headers: { "Content-Type": "application/json" },

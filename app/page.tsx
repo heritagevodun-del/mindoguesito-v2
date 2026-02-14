@@ -1,7 +1,8 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import TextareaAutosize from "react-textarea-autosize";
@@ -21,6 +22,7 @@ import {
 } from "lucide-react";
 
 import Logo from "@/components/Logo";
+import { processTextForTTS } from "@/utils/phonetics"; // Import de notre logique propre
 
 // --- CONSTANTES ---
 const SUGGESTIONS = [
@@ -30,8 +32,10 @@ const SUGGESTIONS = [
   "🛡️ Le rôle du Zangbeto",
 ];
 
-export default function ChatPage() {
-  // 1. LOGIQUE CHAT
+// Composant interne pour gérer les SearchParams (évite les erreurs de build Next.js)
+function ChatContent() {
+  // 1. LOGIQUE CHAT & CONTEXTE
+  const searchParams = useSearchParams();
   const {
     messages,
     input,
@@ -46,19 +50,53 @@ export default function ChatPage() {
     onError: (err) => console.error("Erreur Chat:", err),
   });
 
+  // 2. ÉTATS UI
   const scrollContainerRef = useRef<HTMLElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
-
-  // 2. ÉTATS UI
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+
+  // 3. ÉTATS VOCAUX
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [currentSpeakingId, setCurrentSpeakingId] = useState<string | null>(
     null,
   );
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
 
-  // 3. LOGIQUE VOCALE
+  // --- SYNERGIE HÉRITAGE VODUN (CONTEXTE) ---
+  // Détecte si l'utilisateur vient du site heritagevodun.com avec un sujet précis
+  const hasInitialized = useRef(false);
+
+  useEffect(() => {
+    if (!hasInitialized.current && messages.length === 0) {
+      const context = searchParams.get("context");
+      if (context) {
+        hasInitialized.current = true;
+        let prompt = "";
+
+        switch (context) {
+          case "fa":
+            prompt = "Peux-tu m'expliquer les origines géomanciques du Fâ ?";
+            break;
+          case "zangbeto":
+            prompt = "Qui est le Zangbeto et quel est son rôle de gardien ?";
+            break;
+          case "ouidah":
+            prompt = "Raconte-moi l'histoire sacrée de la ville de Ouidah.";
+            break;
+          default:
+            // Contexte générique
+            break;
+        }
+
+        if (prompt) {
+          append({ role: "user", content: prompt });
+        }
+      }
+    }
+  }, [searchParams, messages, append]);
+
+  // --- LOGIQUE VOCALE ---
   useEffect(() => {
     const loadVoices = () => {
       const available = window.speechSynthesis.getVoices();
@@ -78,23 +116,13 @@ export default function ChatPage() {
       if (currentSpeakingId === id) return;
     }
 
-    let textToRead = text
-      .replace(
-        /[\u{1F600}-\u{1F6FF}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F000}-\u{1F0FF}\u{1F018}-\u{1F270}\u{2934}\u{2935}\u{203C}\u{2049}\u{00A9}\u{00AE}\u{2122}\u{2139}\u{2194}-\u{2199}\u{2328}\u{3030}\u{303D}]/gu,
-        "",
-      )
-      .replace(/[*_~`#]/g, "")
-      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-      .replace(/\s+/g, " ")
-      .trim();
-
-    textToRead = textToRead.replace(/Mindoguesito/gi, "Minne-do-gué-si-to");
-    textToRead = textToRead.replace(/Vodun/gi, "Vaudoun");
-    textToRead = textToRead.replace(/Fâ/gi, "Fa");
-    textToRead = textToRead.replace(/DOBANOU-NOUTO/gi, "Do-ba-nou Nou-to");
+    // UTILISATION DE NOTRE UTILITAIRE PROPRE
+    const textToRead = processTextForTTS(text);
 
     const utterance = new SpeechSynthesisUtterance(textToRead);
     const frVoices = voices.filter((v) => v.lang.startsWith("fr"));
+
+    // Sélection d'une voix masculine ou Google par défaut
     const preferredVoice = frVoices.find(
       (v) =>
         v.name.includes("Google") ||
@@ -104,8 +132,8 @@ export default function ChatPage() {
 
     utterance.voice = preferredVoice || frVoices[0];
     utterance.lang = "fr-FR";
-    utterance.rate = 0.95;
-    utterance.pitch = 0.95;
+    utterance.rate = 0.95; // Un peu plus lent pour la solennité
+    utterance.pitch = 0.95; // Un peu plus grave
 
     utterance.onstart = () => {
       setIsSpeaking(true);
@@ -123,7 +151,7 @@ export default function ChatPage() {
     window.speechSynthesis.speak(utterance);
   };
 
-  // 4. AUTO-SCROLL
+  // --- AUTO-SCROLL ---
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
@@ -138,7 +166,6 @@ export default function ChatPage() {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       if (isSpeaking) window.speechSynthesis.cancel();
-      // ✅ SÉCURITÉ ICI : input?
       if (input?.trim()) formRef.current?.requestSubmit();
     }
   };
@@ -507,7 +534,6 @@ export default function ChatPage() {
               minRows={1}
               maxRows={4}
               placeholder="Posez une question au Fâ..."
-              // ✅ SÉCURITÉ ICI : input || ""
               value={input || ""}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
@@ -515,7 +541,6 @@ export default function ChatPage() {
             />
             <button
               type="submit"
-              // ✅ SÉCURITÉ ICI : input?.trim()
               disabled={isLoading || !input?.trim()}
               className="absolute right-2 bottom-2 p-1.5 bg-gold hover:bg-[#fceeb5] disabled:bg-gray-700 disabled:text-gray-500 text-black rounded-lg transition-all shadow-md active:scale-95"
               aria-label="Envoyer"
@@ -532,5 +557,20 @@ export default function ChatPage() {
         </p>
       </footer>
     </div>
+  );
+}
+
+// Export Principal avec Suspense pour éviter les erreurs de build Next.js liées à useSearchParams
+export default function ChatPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen w-full items-center justify-center bg-void text-gold">
+          Chargement de l&apos;Oracle...
+        </div>
+      }
+    >
+      <ChatContent />
+    </Suspense>
   );
 }

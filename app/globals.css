@@ -2,44 +2,40 @@
 
 /* =========================================
    1. CHARTE GRAPHIQUE "VODUN SOUL"
-   Définition des couleurs et ambiances
+   Définition des couleurs via le système de thème v4
    ========================================= */
-:root {
-  /* --- COULEURS FONDAMENTALES (RGB pour gérer l'opacité) --- */
-  /* Noir Abysse (Fond principal) - Teinté légèrement de violet/terre */
-  --color-void: 8 4 11; 
-  /* Or Antique (Héritage) */
-  --color-gold: 212 175 55;
-  /* Terre de Barre / Sang (Racines) */
-  --color-terra: 138 44 27;
-  /* Cyan Data (L'IA) */
-  --color-tech: 0 243 255;
-  /* Violet Esprit (Mysticisme) */
-  --color-spirit: 138 43 226;
-  
-  /* --- SURFACE & TEXTE --- */
-  --color-surface: 20 20 25; /* Cartes, Sidebars */
-  --color-text-main: 240 240 240; /* Blanc cassé lisible */
-  --color-text-muted: 160 160 160; /* Gris doux */
+@theme {
+  --color-void: #08040B;
+  --color-gold: #D4AF37;
+  --color-terra: #8A2C1B;
+  --color-tech: #00F3FF;
+  --color-spirit: #8A2BE2;
+
+  --font-cinzel: var(--font-cinzel);
+  --font-montserrat: var(--font-montserrat);
 }
 
 /* =========================================
-   2. CONFIGURATION GLOBALE
+   2. STYLES GLOBAUX
    ========================================= */
-html, body {
+html {
   height: 100%;
   scroll-behavior: smooth;
-  background-color: rgb(var(--color-void));
-  color: rgb(var(--color-text-main));
-  /* Lissage des polices pour un rendu "Apple/Premium" */
+  background-color: var(--color-void);
+}
+
+body {
+  height: 100%;
+  background-color: var(--color-void);
+  color: #f3f4f6; /* gray-100 */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Sélection de texte (Surbrillance) en Or */
+/* Sélection de texte en Or */
 ::selection {
-  background: rgba(var(--color-gold), 0.3);
-  color: rgb(var(--color-gold));
+  background-color: rgba(212, 175, 55, 0.3);
+  color: var(--color-gold);
 }
 
 /* =========================================
@@ -53,55 +49,49 @@ html, body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(var(--color-gold), 0.2);
+  background: rgba(212, 175, 55, 0.2);
   border-radius: 10px;
-  transition: background 0.3s;
+  transition: background-color 0.3s;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(var(--color-gold), 0.6);
+  background: rgba(212, 175, 55, 0.6);
 }
 
 /* =========================================
    4. UTILITAIRES SPÉCIAUX (CLASSES PERSO)
    ========================================= */
+@layer utilities {
+  .glass-panel {
+    background: rgba(20, 20, 25, 0.4);
+    /* Ajout du préfixe pour Safari / iOS */
+    -webkit-backdrop-filter: blur(12px);
+    /* Propriété standard pour Chrome, Edge, Firefox */
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
 
-/* --- Effet Verre (Glassmorphism) pour les panneaux --- */
-.glass-panel {
-  background: rgba(20, 20, 25, 0.4);
-  /* D'abord la version -webkit- (pour Safari/Apple) */
-  -webkit-backdrop-filter: blur(12px);
-  /* Ensuite la version standard */
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-/* --- Effet Dégradé Texte "Or Divin" --- */
-.text-gradient-gold {
-  background: linear-gradient(to bottom, #fceeb5, rgb(var(--color-gold)), #996515);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-/* --- Effet de Glow (Lueur) --- */
-.glow-tech {
-  box-shadow: 0 0 15px rgba(var(--color-tech), 0.3);
-}
-.glow-gold {
-  box-shadow: 0 0 15px rgba(var(--color-gold), 0.2);
+  .text-gradient-gold {
+    background: linear-gradient(to bottom, #fceeb5, #D4AF37, #996515);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
 }
 
 /* =========================================
    5. STYLES DU CHAT (MARKDOWN IA)
-   Pour que les réponses de l'IA soient belles
    ========================================= */
 .prose-ai {
   line-height: 1.7;
   font-size: 0.95rem;
 }
 .prose-ai p { margin-bottom: 1rem; }
-.prose-ai strong { color: rgb(var(--color-gold)); font-weight: 600; }
-.prose-ai ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; color: rgb(var(--color-text-muted)); }
+.prose-ai strong { color: var(--color-gold); font-weight: 600; }
+.prose-ai ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; color: #a0a0a0; }
 .prose-ai ol { list-style-type: decimal; padding-left: 1.5rem; margin-bottom: 1rem; }
 .prose-ai code { 
   background: rgba(255,255,255,0.1); 
@@ -109,7 +99,7 @@ html, body {
   border-radius: 4px; 
   font-family: monospace; 
   font-size: 0.85em;
-  color: rgb(var(--color-tech));
+  color: var(--color-tech);
 }
 .prose-ai pre {
   background: #111;
