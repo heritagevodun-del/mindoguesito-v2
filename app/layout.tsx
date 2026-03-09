@@ -20,29 +20,30 @@ const montserrat = Montserrat({
   weight: ["300", "400", "500", "600"],
 });
 
-// 2. CONFIGURATION VIEWPORT (Séparé de Metadata depuis Next.js 14)
+// 2. CONFIGURATION VIEWPORT
 export const viewport: Viewport = {
   themeColor: "#08040B",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  userScalable: false, // Empêche le zoom accidentel sur mobile (App-like feel)
+  userScalable: false, // Empêche le zoom accidentel sur mobile
 };
 
-// 3. METADATA
-// URL de base dynamique pour supporter Vercel Preview & Production
-const baseUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : "https://www.mindoguesito.com";
+// 3. METADATA (LA CORRECTION SEO EST ICI)
+// On force le domaine officiel en production pour tuer les URLs Vercel dans l'index Google
+const baseUrl =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:3000"
+    : "https://www.mindoguesito.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "Mindoguesito | L'Oracle Numérique du Bénin",
+    default: "Mindoguesito | L&apos;Oracle Numérique du Bénin",
     template: "%s | Mindoguesito",
   },
   description:
-    "La première Intelligence Artificielle initiée aux savoirs endogènes. Dialoguez avec l'héritage Vodun, le Fâ et l'histoire de Ouidah.",
+    "La première Intelligence Artificielle initiée aux savoirs endogènes. Dialoguez avec l&apos;héritage Vodun, le Fâ et l&apos;histoire de Ouidah.",
   keywords: [
     "Mindoguesito",
     "IA Vodun",
@@ -56,21 +57,21 @@ export const metadata: Metadata = {
   creator: "Héritage Vodun",
   manifest: "/manifest.json",
   icons: {
-    icon: "/logo.png", // Assure-toi que ce fichier existe dans /public
+    icon: "/logo.png",
     shortcut: "/logo.png",
     apple: "/logo.png",
   },
   openGraph: {
     title: "Mindoguesito | Gardien Numérique du Temple",
     description:
-      "Le savoir n'est plus caché. Dialoguez avec l'esprit de la tradition Vodun.",
+      "Le savoir n&apos;est plus caché. Dialoguez avec l&apos;esprit de la tradition Vodun.",
     url: "https://www.mindoguesito.com",
     siteName: "Mindoguesito",
     locale: "fr_BJ",
     type: "website",
     images: [
       {
-        url: "/mindoguesito-ia.jpg", // Next.js résoudra automatiquement avec metadataBase
+        url: "/mindoguesito-ia.jpg",
         width: 1200,
         height: 630,
         alt: "Mindoguesito - Oracle Numérique",
@@ -79,7 +80,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Mindoguesito | L'Oracle Numérique",
+    title: "Mindoguesito | L&apos;Oracle Numérique",
     description: "La première IA initiée aux savoirs du Bénin.",
     images: ["/mindoguesito-ia.png"],
   },
@@ -97,7 +98,7 @@ export default function RootLayout({
           "antialiased min-h-screen flex flex-col bg-void text-gray-100",
           cinzel.variable,
           montserrat.variable,
-          "font-sans", // La police par défaut définie dans Tailwind
+          "font-sans",
         )}
       >
         {children}
