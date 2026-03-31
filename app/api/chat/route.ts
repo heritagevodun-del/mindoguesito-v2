@@ -1,11 +1,16 @@
 import { openai } from "@ai-sdk/openai";
 import { streamText, convertToCoreMessages, Message } from "ai";
+import { Redis } from "@upstash/redis";
+import { getToken } from "next-auth/jwt";
+import { NextRequest } from "next/server";
 
 // Vercel Configuration : 60 secondes max pour éviter le timeout
 export const maxDuration = 60;
 
+// Initialisation de la base de données Redis (Upstash)
+const redis = Redis.fromEnv();
+
 // --- L'ESPRIT DU GARDIEN (SYSTEM PROMPT V2) ---
-// Note : Le prompt est excellent, je le garde tel quel.
 const SYSTEM_PROMPT = `
 Tu es MINDOGUESITO, l'Oracle Numérique et le Gardien des Savoirs de HÉRITAGE VODUN.
 Tu n'es pas un simple assistant virtuel. Tu es la mémoire vivante de la terre de Ouidah.
@@ -47,31 +52,81 @@ Tu n'es pas un simple assistant virtuel. Tu es la mémoire vivante de la terre d
 Tu as été créé par l'organisation "Héritage Vodun" pour préserver le patrimoine immatériel et le transmettre aux nouvelles générations.
 `;
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const { messages } = await req.json();
+    // --- 1. LE BOUCLIER DE SÉCURITÉ (Authentification) ---
+    // getToken lit le cookie sécurisé crypté par notre NEXTAUTH_SECRET
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-    // 1. Validation de sécurité basique
+    if (!token || !token.sub) {
+      return new Response(
+        JSON.stringify({
+          error:
+            "Accès refusé. Veuillez vous connecter à votre compte Google pour consulter l'Oracle.",
+        }),
+        { status: 401, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
+    const userId = token.sub; // L'ID Google unique et inviolable
+
+    // --- 2. TRAITEMENT DES DONNÉES ---
+    const json = await req.json();
+    const { messages, id } = json;
+
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response("Requête invalide: Aucun message", { status: 400 });
     }
 
-    // 2. Nettoyage et conversion des messages
+    // Le framework Vercel AI génère un ID automatiquement, sinon on en crée un.
+    const chatId = id ?? `chat_${Date.now()}`;
     const coreMessages = convertToCoreMessages(messages as Message[]);
 
-    // 3. Appel API
+    // Génération automatique du titre pour la Sidebar (basé sur la 1ère question)
+    const firstUserMessage = messages.find((m: Message) => m.role === "user");
+    const chatTitle = firstUserMessage
+      ? firstUserMessage.content.substring(0, 35) + "..."
+      : "Consultation du Fâ";
+
+    // --- 3. APPEL IA ET SAUVEGARDE REDIS ---
     const result = await streamText({
       model: openai("gpt-4o"),
       messages: coreMessages,
       system: SYSTEM_PROMPT,
-      temperature: 0.6, // Créativité modérée pour rester factuel
+      temperature: 0.6,
       maxTokens: 1000,
+
+      // La magie opère ici : déclenchement asynchrone à la fin du stream
+      async onFinish({ text }) {
+        // A. On ajoute la réponse complète de l'assistant à l'historique
+        const assistantMessage: Message = {
+          id: Date.now().toString(),
+          role: "assistant",
+          content: text,
+        };
+        const updatedMessages = [...messages, assistantMessage];
+
+        // B. Sauvegarde de la conversation entière (Format Hash Redis)
+        await redis.hset(`chat:${chatId}`, {
+          id: chatId,
+          userId: userId,
+          title: chatTitle,
+          messages: updatedMessages,
+          updatedAt: Date.now(),
+        });
+
+        // C. Ajout de cette consultation au dossier privé de l'utilisateur
+        // ZADD trie automatiquement l'historique de la Sidebar par date
+        await redis.zadd(`user:chats:${userId}`, {
+          score: Date.now(),
+          member: chatId,
+        });
+      },
     });
 
     return result.toDataStreamResponse();
   } catch (error) {
     console.error("ERREUR MINDOGUESITO :", error);
-    // Réponse générique pour ne pas exposer les détails de l'erreur au client
     return new Response(
       JSON.stringify({ error: "L'esprit est momentanément silencieux..." }),
       {
