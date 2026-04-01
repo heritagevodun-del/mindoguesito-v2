@@ -13,10 +13,8 @@ import {
   ExternalLink,
 } from "lucide-react";
 
-// ✅ IMPORT DU LOGO
 import Logo from "@/components/Logo";
 
-// ✅ TYPAGE EXPLICITE
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
@@ -38,20 +36,19 @@ const itemVariants: Variants = {
 
 export default function FeaturesPage() {
   return (
-    // 'overflow-x-hidden' pour la stabilité
-    <div className="relative min-h-screen bg-void text-gray-100 font-sans selection:bg-gold/30 selection:text-white flex flex-col overflow-x-hidden">
-      {/* 1. FOND DYNAMIQUE */}
+    <div className="relative min-h-screen bg-[#050505] text-gray-100 font-sans selection:bg-[#d4af37]/30 selection:text-white flex flex-col overflow-x-hidden">
+      {/* 1. FOND DYNAMIQUE (Harmonisé avec le Chat) */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-10%] right-[-10%] w-[50vh] h-[50vh] bg-spirit/10 blur-[100px] rounded-full mix-blend-screen" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[40vh] h-[40vh] bg-gold/5 blur-[80px] rounded-full mix-blend-screen" />
-        <div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] brightness-100 contrast-150"></div>
+        <div className="absolute top-[-10%] right-[-10%] w-[50vh] h-[50vh] bg-[#2a1b3d]/20 blur-[100px] rounded-full mix-blend-screen" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[40vh] h-[40vh] bg-[#d4af37]/10 blur-[80px] rounded-full mix-blend-screen" />
+        <div className="absolute inset-0 opacity-[0.02] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] brightness-100 contrast-150"></div>
       </div>
 
       {/* --- HEADER --- */}
-      <header className="px-6 py-5 border-b border-white/5 flex items-center justify-between sticky top-0 bg-void/80 backdrop-blur-xl z-50 shadow-sm">
+      <header className="px-6 py-5 border-b border-white/5 flex items-center justify-between sticky top-0 bg-[#050505]/80 backdrop-blur-xl z-50 shadow-sm">
         <Link
           href="/"
-          className="flex items-center gap-2 text-gray-400 hover:text-gold transition-colors group"
+          className="flex items-center gap-2 text-gray-400 hover:text-[#d4af37] transition-colors group"
         >
           <ArrowLeft
             size={20}
@@ -63,7 +60,7 @@ export default function FeaturesPage() {
         </Link>
         <div className="flex items-center gap-3">
           <Logo className="w-8 h-8" />
-          <span className="font-serif font-bold text-gold hidden sm:block tracking-wide">
+          <span className="font-serif font-bold text-[#d4af37] hidden sm:block tracking-wide">
             MINDOGUESITO
           </span>
         </div>
@@ -76,9 +73,9 @@ export default function FeaturesPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-20 space-y-6"
+          className="text-center mb-20 space-y-6 mt-4"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold/10 border border-gold/20 text-gold text-xs font-bold uppercase tracking-widest mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#d4af37]/10 border border-[#d4af37]/20 text-[#d4af37] text-xs font-bold uppercase tracking-widest mb-4 shadow-[0_0_15px_rgba(212,175,55,0.1)]">
             <Cpu size={14} />
             <span>Intelligence Culturelle</span>
           </div>
@@ -86,7 +83,7 @@ export default function FeaturesPage() {
           <h1 className="text-4xl md:text-6xl font-serif font-black text-white leading-tight">
             Plus qu&apos;un Algorithme,
             <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold to-[#fceeb5]">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#d4af37] to-[#fceeb5]">
               Un Gardien Numérique
             </span>
           </h1>
@@ -108,11 +105,11 @@ export default function FeaturesPage() {
           {/* CARTE 1 */}
           <motion.div
             variants={itemVariants}
-            className="glass-panel p-8 rounded-2xl group hover:border-gold/30 transition-all duration-300 relative overflow-hidden"
+            className="bg-[#121212]/80 backdrop-blur-sm border border-white/5 p-8 rounded-2xl group hover:border-[#d4af37]/30 transition-all duration-300 relative overflow-hidden shadow-lg"
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 rounded-full blur-3xl -mr-16 -mt-16 transition-opacity opacity-0 group-hover:opacity-100"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37]/5 rounded-full blur-3xl -mr-16 -mt-16 transition-opacity opacity-0 group-hover:opacity-100"></div>
 
-            <div className="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center text-gold mb-6 group-hover:scale-110 group-hover:bg-gold group-hover:text-black transition-all duration-300">
+            <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-[#d4af37] mb-6 group-hover:scale-110 group-hover:bg-[#d4af37] group-hover:text-black transition-all duration-300 shadow-sm">
               <MessageSquare size={26} />
             </div>
             <h3 className="text-2xl font-serif font-bold text-white mb-3">
@@ -128,18 +125,18 @@ export default function FeaturesPage() {
           {/* CARTE 2 */}
           <motion.div
             variants={itemVariants}
-            className="glass-panel p-8 rounded-2xl group hover:border-gold/30 transition-all duration-300 relative overflow-hidden"
+            className="bg-[#121212]/80 backdrop-blur-sm border border-white/5 p-8 rounded-2xl group hover:border-blue-400/30 transition-all duration-300 relative overflow-hidden shadow-lg"
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-tech/5 rounded-full blur-3xl -mr-16 -mt-16 transition-opacity opacity-0 group-hover:opacity-100"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl -mr-16 -mt-16 transition-opacity opacity-0 group-hover:opacity-100"></div>
 
-            <div className="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center text-tech mb-6 group-hover:scale-110 group-hover:bg-tech group-hover:text-black transition-all duration-300">
+            <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-blue-400 mb-6 group-hover:scale-110 group-hover:bg-blue-500 group-hover:text-white transition-all duration-300 shadow-sm">
               <Library size={26} />
             </div>
             <h3 className="text-2xl font-serif font-bold text-white mb-3">
               Mémoire Vérifiée
             </h3>
             <p className="text-gray-400 text-sm leading-relaxed">
-              Connecté à la base de données <strong>Héritage Vodun</strong>,
+              Connecté à la plateforme <strong>Héritage Vodun</strong>,
               l&apos;IA ne fabule pas. Si une réponse nécessite un
               approfondissement, elle s&apos;appuie sur des articles rédigés par
               des experts.
@@ -149,11 +146,11 @@ export default function FeaturesPage() {
           {/* CARTE 3 */}
           <motion.div
             variants={itemVariants}
-            className="glass-panel p-8 rounded-2xl group hover:border-gold/30 transition-all duration-300 relative overflow-hidden"
+            className="bg-[#121212]/80 backdrop-blur-sm border border-white/5 p-8 rounded-2xl group hover:border-emerald-400/30 transition-all duration-300 relative overflow-hidden shadow-lg"
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-terra/5 rounded-full blur-3xl -mr-16 -mt-16 transition-opacity opacity-0 group-hover:opacity-100"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl -mr-16 -mt-16 transition-opacity opacity-0 group-hover:opacity-100"></div>
 
-            <div className="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center text-terra mb-6 group-hover:scale-110 group-hover:bg-terra group-hover:text-white transition-all duration-300">
+            <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-emerald-400 mb-6 group-hover:scale-110 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300 shadow-sm">
               <Eye size={26} />
             </div>
             <h3 className="text-2xl font-serif font-bold text-white mb-3">
@@ -169,11 +166,11 @@ export default function FeaturesPage() {
           {/* CARTE 4 */}
           <motion.div
             variants={itemVariants}
-            className="glass-panel p-8 rounded-2xl group hover:border-gold/30 transition-all duration-300 relative overflow-hidden"
+            className="bg-[#121212]/80 backdrop-blur-sm border border-white/5 p-8 rounded-2xl group hover:border-purple-400/30 transition-all duration-300 relative overflow-hidden shadow-lg"
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-spirit/5 rounded-full blur-3xl -mr-16 -mt-16 transition-opacity opacity-0 group-hover:opacity-100"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full blur-3xl -mr-16 -mt-16 transition-opacity opacity-0 group-hover:opacity-100"></div>
 
-            <div className="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center text-spirit mb-6 group-hover:scale-110 group-hover:bg-spirit group-hover:text-white transition-all duration-300">
+            <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-purple-400 mb-6 group-hover:scale-110 group-hover:bg-purple-500 group-hover:text-white transition-all duration-300 shadow-sm">
               <Scroll size={26} />
             </div>
             <h3 className="text-2xl font-serif font-bold text-white mb-3">
@@ -195,11 +192,11 @@ export default function FeaturesPage() {
           className="text-center relative"
         >
           {/* Lueur arrière */}
-          <div className="absolute inset-0 bg-gradient-to-r from-gold/10 via-terra/10 to-gold/10 blur-3xl -z-10"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#d4af37]/10 via-[#2a1b3d]/10 to-[#d4af37]/10 blur-3xl -z-10"></div>
 
-          <div className="glass-panel border border-gold/20 rounded-3xl p-10 md:p-16 relative overflow-hidden">
+          <div className="bg-[#121212]/90 backdrop-blur-md border border-[#d4af37]/20 rounded-3xl p-10 md:p-16 relative overflow-hidden shadow-2xl">
             <Sparkles
-              className="mx-auto text-gold mb-6 animate-pulse"
+              className="mx-auto text-[#d4af37] mb-6 animate-pulse"
               size={40}
             />
 
@@ -211,11 +208,9 @@ export default function FeaturesPage() {
               première question à l&apos;esprit numérique.
             </p>
 
-            {/* --- BOUTON CORRIGÉ --- */}
-            {/* Défaut: Texte clair | Hover: Texte Or + Bordure brillante */}
             <Link
               href="/"
-              className="inline-flex items-center gap-3 bg-surface border border-gold/30 text-gray-200 font-bold py-4 px-10 rounded-full hover:border-gold hover:text-gold transition-all transform hover:scale-105 shadow-[0_0_30px_rgba(212,175,55,0.1)] hover:shadow-[0_0_40px_rgba(212,175,55,0.3)] text-lg"
+              className="inline-flex items-center gap-3 bg-[#1a1a1a] border border-[#d4af37]/30 text-gray-200 font-bold py-4 px-10 rounded-full hover:bg-[#d4af37]/10 hover:border-[#d4af37] hover:text-[#d4af37] transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(212,175,55,0.05)] hover:shadow-[0_0_40px_rgba(212,175,55,0.2)] text-lg"
             >
               <MessageSquare size={20} />
               Entrer dans le Temple
@@ -225,9 +220,10 @@ export default function FeaturesPage() {
               <Link
                 href="https://www.heritagevodun.com"
                 target="_blank"
-                className="text-xs text-gold/60 hover:text-gold flex items-center gap-1 uppercase tracking-widest transition-colors"
+                className="text-xs text-[#d4af37]/60 hover:text-[#d4af37] flex items-center gap-1 uppercase tracking-widest transition-colors"
               >
-                Propulsé par Héritage Vodun <ExternalLink size={10} />
+                Propulsé par la plateforme Héritage Vodun{" "}
+                <ExternalLink size={10} />
               </Link>
             </div>
           </div>
@@ -235,7 +231,7 @@ export default function FeaturesPage() {
       </main>
 
       {/* FOOTER */}
-      <footer className="py-8 text-center border-t border-white/5 mt-auto bg-void/90 backdrop-blur-md">
+      <footer className="py-8 text-center border-t border-white/5 mt-auto bg-[#050505]/90 backdrop-blur-md">
         <p className="text-xs text-gray-600 font-medium tracking-wide">
           © 2026 Mindoguesito. Fait avec respect pour la tradition.
         </p>
