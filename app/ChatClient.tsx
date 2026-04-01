@@ -173,7 +173,8 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
         <div className="absolute inset-0 opacity-[0.02] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] brightness-100 contrast-150"></div>
       </div>
 
-      <header className="flex-none h-16 px-4 pl-14 md:pl-4 border-b border-white/5 bg-[#050505]/60 backdrop-blur-xl flex items-center justify-between z-20">
+      {/* --- CORRECTION HEADER ICI : padding gauche pl-[4.5rem] pour laisser la place au bouton --- */}
+      <header className="flex-none h-16 px-4 pl-[4.5rem] md:pl-6 border-b border-white/5 bg-[#050505]/80 backdrop-blur-xl flex items-center justify-between z-20">
         <div
           className="flex items-center gap-3 group cursor-pointer"
           onClick={() => (window.location.href = "/")}
@@ -224,7 +225,6 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
                     L&apos;Esprit du Code
                   </h2>
                 </div>
-                {/* CORRECTION 1 : Ajout de aria-label="Fermer" */}
                 <button
                   onClick={() => setIsAboutOpen(false)}
                   className="p-2 bg-white/5 hover:bg-red-500/20 hover:text-red-400 rounded-full transition-colors"
@@ -409,7 +409,6 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
               onKeyDown={handleKeyDown}
               disabled={isLoading}
             />
-            {/* CORRECTION 2 : Ajout de aria-label="Envoyer" */}
             <button
               type="submit"
               disabled={isLoading || !input?.trim()}
@@ -432,7 +431,6 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
   );
 }
 
-// L'EXPORT CRUCIAL AVEC LA GESTION DE LA PROPRIÉTÉ :
 export default function ChatClient({
   existingChatId,
 }: {

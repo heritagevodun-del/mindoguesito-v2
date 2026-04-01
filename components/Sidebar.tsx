@@ -33,7 +33,6 @@ export default function Sidebar() {
   const [chats, setChats] = useState<Chat[]>([]);
   const [isLoadingChats, setIsLoadingChats] = useState(false);
 
-  // LA CORRECTION ESLINT EST ICI (Fonction asynchrone isolée)
   useEffect(() => {
     let isMounted = true;
 
@@ -76,8 +75,13 @@ export default function Sidebar() {
 
   return (
     <>
+      {/* CORRECTION EXPERTE : 
+        On retire le fond noir (bg-[#121212]), la bordure et le shadow. 
+        On utilise text-[#d4af37] et on ajuste le positionnement 
+        pour qu'il soit parfaitement aligné avec le Logo de ChatClient.tsx 
+      */}
       <button
-        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-[#121212] text-white rounded-md border border-gray-800 shadow-lg"
+        className="md:hidden fixed top-3.5 left-4 z-50 p-2 text-[#d4af37] hover:bg-white/5 rounded-full transition-colors active:scale-95"
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Ouvrir le menu"
       >
