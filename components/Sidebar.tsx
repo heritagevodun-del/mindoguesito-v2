@@ -11,6 +11,7 @@ import {
   Loader2,
   BookOpen,
   Layers,
+  X, // <-- NOUVELLE ICÔNE IMPORTÉE
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
@@ -75,30 +76,37 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* CORRECTION EXPERTE : 
-        On retire le fond noir (bg-[#121212]), la bordure et le shadow. 
-        On utilise text-[#d4af37] et on ajuste le positionnement 
-        pour qu'il soit parfaitement aligné avec le Logo de ChatClient.tsx 
-      */}
-      <button
-        className="md:hidden fixed top-3.5 left-4 z-50 p-2 text-[#d4af37] hover:bg-white/5 rounded-full transition-colors active:scale-95"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label="Ouvrir le menu"
-      >
-        <Menu size={24} />
-      </button>
+      {/* CORRECTION 1 : On cache l'icône si le menu est ouvert (!isOpen) */}
+      {!isOpen && (
+        <button
+          className="md:hidden fixed top-3.5 left-4 z-40 p-2 text-[#d4af37] hover:bg-white/5 rounded-full transition-colors active:scale-95"
+          onClick={() => setIsOpen(true)}
+          aria-label="Ouvrir le menu"
+        >
+          <Menu size={24} />
+        </button>
+      )}
 
+      {/* CORRECTION 2 : On s'assure que la Sidebar est au premier plan (z-50) */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-[#050505] border-r border-gray-800 transform transition-transform duration-300 ease-in-out flex flex-col ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#050505] border-r border-gray-800 transform transition-transform duration-300 ease-in-out flex flex-col ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } md:relative md:translate-x-0`}
       >
-        <div className="p-4 flex items-center justify-center border-b border-gray-800">
+        {/* CORRECTION 3 : Header propre avec Logo à gauche et Croix (X) à droite */}
+        <div className="h-16 flex items-center justify-between px-5 border-b border-gray-800">
           <Link href="/" onClick={() => setIsOpen(false)}>
-            <h1 className="text-[#d4af37] font-serif text-xl font-bold tracking-wider uppercase hover:opacity-80 transition-opacity">
+            <h1 className="text-[#d4af37] font-serif text-lg font-bold tracking-wider uppercase hover:opacity-80 transition-opacity">
               Mindoguesito
             </h1>
           </Link>
+          <button
+            onClick={() => setIsOpen(false)}
+            className="md:hidden text-gray-400 hover:text-white p-1.5 rounded-full hover:bg-white/5 transition-colors"
+            aria-label="Fermer le menu"
+          >
+            <X size={20} />
+          </button>
         </div>
 
         <div className="p-4 pb-2">
@@ -228,7 +236,7 @@ export default function Sidebar() {
 
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/60 z-30 md:hidden backdrop-blur-sm"
+          className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm"
           onClick={() => setIsOpen(false)}
         />
       )}
