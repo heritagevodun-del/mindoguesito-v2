@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   PlusCircle,
   MessageSquare,
@@ -8,6 +9,8 @@ import {
   LogOut,
   LogIn,
   Loader2,
+  BookOpen,
+  Layers,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
@@ -17,18 +20,23 @@ type Chat = {
   title: string;
 };
 
+// --- CONFIGURATION DU MENU PRINCIPAL ---
+const MAIN_MENU = [
+  { name: "Le Journal", href: "/journal", icon: BookOpen },
+  { name: "Fonctionnalités", href: "/fonctionnalites", icon: Layers },
+];
+
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const { data: session, status } = useSession();
+  const pathname = usePathname(); // Permet de détecter la page active
 
   const [chats, setChats] = useState<Chat[]>([]);
   const [isLoadingChats, setIsLoadingChats] = useState(false);
 
-  // Le "cerveau" de la Sidebar
   useEffect(() => {
     let isMounted = true;
 
-    // On isole la fonction de chargement pour pouvoir l'appeler à volonté
     const loadChats = async () => {
       if (status === "authenticated") {
         if (isMounted) setIsLoadingChats(true);
@@ -48,10 +56,8 @@ export default function Sidebar() {
       }
     };
 
-    // 1. Chargement initial quand le statut change
     loadChats();
 
-    // 2. L'ÉCOUTEUR D'ÉVÉNEMENT (Le récepteur de signal)
     const handleRefresh = () => {
       if (isMounted) loadChats();
     };
@@ -59,19 +65,17 @@ export default function Sidebar() {
 
     return () => {
       isMounted = false;
-      window.removeEventListener("refresh-chats", handleRefresh); // Nettoyage
+      window.removeEventListener("refresh-chats", handleRefresh);
     };
   }, [status]);
 
-  // Fonction pour forcer le nettoyage de l'écran principal
   const handleNewChat = () => {
     setIsOpen(false);
-    window.location.href = "/"; // Force le rechargement complet de la page
+    window.location.href = "/";
   };
 
   return (
     <>
-      {/* Bouton Menu pour Mobile */}
       <button
         className="md:hidden fixed top-4 left-4 z-50 p-2 bg-[#121212] text-white rounded-md border border-gray-800 shadow-lg"
         onClick={() => setIsOpen(!isOpen)}
@@ -80,20 +84,21 @@ export default function Sidebar() {
         <Menu size={24} />
       </button>
 
-      {/* Sidebar (Barre latérale) */}
       <div
         className={`fixed inset-y-0 left-0 z-40 w-64 bg-[#050505] border-r border-gray-800 transform transition-transform duration-300 ease-in-out flex flex-col ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } md:relative md:translate-x-0`}
       >
         <div className="p-4 flex items-center justify-center border-b border-gray-800">
-          <h1 className="text-[#d4af37] font-serif text-xl font-bold tracking-wider uppercase">
-            Mindoguesito
-          </h1>
+          <Link href="/" onClick={() => setIsOpen(false)}>
+            <h1 className="text-[#d4af37] font-serif text-xl font-bold tracking-wider uppercase hover:opacity-80 transition-opacity">
+              Mindoguesito
+            </h1>
+          </Link>
         </div>
 
-        {/* Bouton Nouvelle Consultation (Corrigé !) */}
-        <div className="p-4">
+        {/* 1. BOUTON ACTION PRINCIPALE */}
+        <div className="p-4 pb-2">
           <button
             onClick={handleNewChat}
             className="flex items-center gap-2 w-full px-4 py-3 bg-[#1a1a1a] hover:bg-[#2a2a2a] border border-[#d4af37]/30 text-white rounded-lg transition-colors duration-200 shadow-sm"
@@ -103,7 +108,36 @@ export default function Sidebar() {
           </button>
         </div>
 
-        {/* Historique des Chats */}
+        {/* 2. NAVIGATION PRINCIPALE (Le Sanctuaire) */}
+        <div className="px-3 py-2 space-y-1 border-b border-gray-800/50 pb-4">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">
+            Le Sanctuaire
+          </p>
+          {MAIN_MENU.map((item) => {
+            const isActive =
+              pathname === item.href || pathname.startsWith(`${item.href}/`);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setIsOpen(false)}
+                className={`flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-all duration-200 ${
+                  isActive
+                    ? "bg-[#d4af37]/10 text-[#d4af37] border border-[#d4af37]/20 font-medium"
+                    : "text-gray-400 hover:bg-[#1a1a1a] hover:text-white border border-transparent"
+                }`}
+              >
+                <item.icon
+                  size={18}
+                  className={isActive ? "text-[#d4af37]" : "text-gray-500"}
+                />
+                {item.name}
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* 3. HISTORIQUE PRIVÉ */}
         <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2 custom-scrollbar">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2 mt-2">
             Historique du Fâ
@@ -130,20 +164,27 @@ export default function Sidebar() {
             )}
 
           {!isLoadingChats &&
-            chats.map((chat) => (
-              <Link
-                key={chat.id}
-                href={`/c/${chat.id}`}
-                className="flex items-center gap-3 px-3 py-3 text-sm text-gray-300 hover:bg-[#1a1a1a] hover:text-white rounded-lg transition-colors truncate"
-                onClick={() => setIsOpen(false)}
-              >
-                <MessageSquare size={16} className="text-gray-500 shrink-0" />
-                <span className="truncate">{chat.title}</span>
-              </Link>
-            ))}
+            chats.map((chat) => {
+              const isActive = pathname === `/c/${chat.id}`;
+              return (
+                <Link
+                  key={chat.id}
+                  href={`/c/${chat.id}`}
+                  className={`flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-all duration-200 truncate ${
+                    isActive
+                      ? "bg-[#2a2a2a] text-white font-medium border border-gray-700"
+                      : "text-gray-400 hover:bg-[#1a1a1a] hover:text-gray-200 border border-transparent"
+                  }`}
+                  onClick={() => setIsOpen(false)}
+                >
+                  <MessageSquare size={16} className="text-gray-500 shrink-0" />
+                  <span className="truncate">{chat.title}</span>
+                </Link>
+              );
+            })}
         </div>
 
-        {/* Footer Sidebar (Système d'Authentification) */}
+        {/* 4. SYSTÈME D'AUTHENTIFICATION */}
         <div className="p-4 border-t border-gray-800">
           {status === "loading" ? (
             <div className="flex items-center gap-3 px-2 py-2">
