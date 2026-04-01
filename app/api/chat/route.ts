@@ -55,7 +55,6 @@ Tu as été créé par l'organisation "Héritage Vodun" pour préserver le patri
 export async function POST(req: NextRequest) {
   try {
     // --- 1. LE BOUCLIER DE SÉCURITÉ (Authentification) ---
-    // getToken lit le cookie sécurisé crypté par notre NEXTAUTH_SECRET
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
     if (!token || !token.sub) {
@@ -68,7 +67,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const userId = token.sub; // L'ID Google unique et inviolable
+    const userId = token.sub;
 
     // --- 2. TRAITEMENT DES DONNÉES ---
     const json = await req.json();
@@ -78,15 +77,25 @@ export async function POST(req: NextRequest) {
       return new Response("Requête invalide: Aucun message", { status: 400 });
     }
 
-    // Le framework Vercel AI génère un ID automatiquement, sinon on en crée un.
     const chatId = id ?? `chat_${Date.now()}`;
     const coreMessages = convertToCoreMessages(messages as Message[]);
 
-    // Génération automatique du titre pour la Sidebar (basé sur la 1ère question)
-    const firstUserMessage = messages.find((m: Message) => m.role === "user");
-    const chatTitle = firstUserMessage
-      ? firstUserMessage.content.substring(0, 35) + "..."
-      : "Consultation du Fâ";
+    // --- CORRECTION DU TITRE (Compatible avec la fonction "Renommer") ---
+    // On vérifie d'abord si un titre existe déjà dans Redis pour ne pas l'écraser
+    const existingTitle = await redis.hget(`chat:${chatId}`, "title");
+    let chatTitle = existingTitle as string;
+
+    // Si le titre n'existe pas, on le génère avec la première question
+    if (!chatTitle) {
+      const firstUserMessage = messages.find((m: Message) => m.role === "user");
+      if (firstUserMessage && firstUserMessage.content) {
+        const content = firstUserMessage.content.trim();
+        chatTitle =
+          content.length > 30 ? content.substring(0, 30) + "..." : content;
+      } else {
+        chatTitle = "Consultation du Fâ";
+      }
+    }
 
     // --- 3. APPEL IA ET SAUVEGARDE REDIS ---
     const result = await streamText({
@@ -96,7 +105,6 @@ export async function POST(req: NextRequest) {
       temperature: 0.6,
       maxTokens: 1000,
 
-      // La magie opère ici : déclenchement asynchrone à la fin du stream
       async onFinish({ text }) {
         // A. On ajoute la réponse complète de l'assistant à l'historique
         const assistantMessage: Message = {
@@ -106,17 +114,16 @@ export async function POST(req: NextRequest) {
         };
         const updatedMessages = [...messages, assistantMessage];
 
-        // B. Sauvegarde de la conversation entière (Format Hash Redis)
+        // B. Sauvegarde de la conversation entière
         await redis.hset(`chat:${chatId}`, {
           id: chatId,
           userId: userId,
-          title: chatTitle,
+          title: chatTitle, // On utilise le titre protégé
           messages: updatedMessages,
           updatedAt: Date.now(),
         });
 
-        // C. Ajout de cette consultation au dossier privé de l'utilisateur
-        // ZADD trie automatiquement l'historique de la Sidebar par date
+        // C. Ajout au dossier privé de l'utilisateur
         await redis.zadd(`user:chats:${userId}`, {
           score: Date.now(),
           member: chatId,
