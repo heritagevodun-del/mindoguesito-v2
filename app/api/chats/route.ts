@@ -21,7 +21,6 @@ export async function GET(req: NextRequest) {
     const userId = token.sub;
 
     // 2. Récupérer les ID des consultations, triés du plus récent au plus ancien
-    // (Grâce à la commande zrange de Redis)
     const chatIds = await redis.zrange(`user:chats:${userId}`, 0, -1, {
       rev: true,
     });
@@ -30,18 +29,30 @@ export async function GET(req: NextRequest) {
       return NextResponse.json([]); // Historique vide
     }
 
-    // 3. Ultra-Performance : Le Pipeline Redis
-    // Au lieu de faire 10 requêtes pour 10 chats, on fait 1 seule requête groupée
+    // 3. ULTRA-PERFORMANCE : Le Pipeline Redis avec HMGET
+    // On ne récupère QUE les métadonnées (titre et pinned).
+    // Ne jamais charger les messages ici pour ne pas saturer la bande passante !
     const pipeline = redis.pipeline();
-    chatIds.forEach((id) => pipeline.hget(`chat:${id}`, "title"));
+    chatIds.forEach((id) => pipeline.hmget(`chat:${id}`, "title", "pinned"));
 
-    const titles = (await pipeline.exec()) as (string | null)[];
+    // Exécution groupée
+    const results = (await pipeline.exec()) as [
+      string | null,
+      string | boolean | null,
+    ][];
 
     // 4. Formatage de la réponse pour la Sidebar
-    const chats = chatIds.map((id, index) => ({
-      id: id as string,
-      title: titles[index] || "Consultation du Fâ",
-    }));
+    const chats = chatIds
+      .map((id, index) => {
+        const [title, pinned] = results[index] || [null, null];
+        return {
+          id: id as string,
+          title: title, // Fini le fallback "Consultation du Fâ" forcé !
+          pinned: pinned === "true" || pinned === true, // Gestion du booléen depuis Redis
+        };
+      })
+      // On filtre pour ne pas afficher de chats corrompus/vides
+      .filter((chat) => chat.title !== null);
 
     return NextResponse.json(chats);
   } catch (error) {
