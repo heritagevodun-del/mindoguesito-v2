@@ -54,20 +54,11 @@ Tu as été créé par l'organisation "Héritage Vodun" pour préserver le patri
 
 export async function POST(req: NextRequest) {
   try {
-    // --- 1. LE BOUCLIER DE SÉCURITÉ (Authentification) ---
+    // --- 1. LE BOUCLIER DE SÉCURITÉ (Ouverture au public) ---
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-    if (!token || !token.sub) {
-      return new Response(
-        JSON.stringify({
-          error:
-            "Accès refusé. Veuillez vous connecter à votre compte Google pour consulter l'Oracle.",
-        }),
-        { status: 401, headers: { "Content-Type": "application/json" } },
-      );
-    }
-
-    const userId = token.sub;
+    // Si pas de token, on assigne un ID anonyme au lieu de bloquer
+    const userId = token?.sub || "anonymous";
 
     // --- 2. TRAITEMENT DES DONNÉES ---
     const json = await req.json();
@@ -106,28 +97,31 @@ export async function POST(req: NextRequest) {
       maxTokens: 1000,
 
       async onFinish({ text }) {
-        // A. On ajoute la réponse complète de l'assistant à l'historique
-        const assistantMessage: Message = {
-          id: Date.now().toString(),
-          role: "assistant",
-          content: text,
-        };
-        const updatedMessages = [...messages, assistantMessage];
+        // On ne sauvegarde dans la base de données QUE si l'utilisateur est connecté
+        if (userId !== "anonymous") {
+          // A. On ajoute la réponse complète de l'assistant à l'historique
+          const assistantMessage: Message = {
+            id: Date.now().toString(),
+            role: "assistant",
+            content: text,
+          };
+          const updatedMessages = [...messages, assistantMessage];
 
-        // B. Sauvegarde de la conversation entière
-        await redis.hset(`chat:${chatId}`, {
-          id: chatId,
-          userId: userId,
-          title: chatTitle, // On utilise le titre protégé
-          messages: updatedMessages,
-          updatedAt: Date.now(),
-        });
+          // B. Sauvegarde de la conversation entière
+          await redis.hset(`chat:${chatId}`, {
+            id: chatId,
+            userId: userId,
+            title: chatTitle,
+            messages: updatedMessages,
+            updatedAt: Date.now(),
+          });
 
-        // C. Ajout au dossier privé de l'utilisateur
-        await redis.zadd(`user:chats:${userId}`, {
-          score: Date.now(),
-          member: chatId,
-        });
+          // C. Ajout au dossier privé de l'utilisateur
+          await redis.zadd(`user:chats:${userId}`, {
+            score: Date.now(),
+            member: chatId,
+          });
+        }
       },
     });
 
