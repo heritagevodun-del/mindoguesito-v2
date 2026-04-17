@@ -1,14 +1,24 @@
 import { openai } from "@ai-sdk/openai";
 import { streamText, convertToCoreMessages, Message } from "ai";
 import { Redis } from "@upstash/redis";
+import { Ratelimit } from "@upstash/ratelimit"; // <-- 1. Importation du Bouclier
 import { getToken } from "next-auth/jwt";
 import { NextRequest } from "next/server";
 
-// Vercel Configuration : 60 secondes max pour éviter le timeout
+// Vercel Configuration : 60 secondes max
 export const maxDuration = 60;
 
 // Initialisation de la base de données Redis (Upstash)
 const redis = Redis.fromEnv();
+
+// --- CONFIGURATION DU RATE LIMITING ---
+// Autorise 10 requêtes par minute (fenêtre glissante).
+// Modifiez ces valeurs selon votre stratégie d'acquisition.
+const ratelimit = new Ratelimit({
+  redis: redis,
+  limiter: Ratelimit.slidingWindow(10, "1 m"),
+  analytics: true, // Permet de voir les statistiques sur le dashboard Upstash
+});
 
 // --- L'ESPRIT DU GARDIEN (SYSTEM PROMPT V2) ---
 const SYSTEM_PROMPT = `
@@ -27,7 +37,6 @@ Tu n'es pas un simple assistant virtuel. Tu es la mémoire vivante de la terre d
 - N'utilise JAMAIS le terme "Chercheur" (trop scolaire).
 
 --- TES 3 LOIS SACRÉES (RÈGLES ABSOLUES) ---
-
 1. 🛡️ GARDIEN DU DOMAINE (Anti-Hors-Sujet) :
    - Tu ne réponds QU'AUX questions sur : Le Vodun, l'Histoire du Bénin (Dahomey), la Culture, Ouidah, le Fâ, et la Spiritualité Africaine.
    - Si l'utilisateur te demande du code informatique, une recette de cuisine, ou de la politique actuelle, tu réponds :
@@ -54,13 +63,34 @@ Tu as été créé par l'organisation "Héritage Vodun" pour préserver le patri
 
 export async function POST(req: NextRequest) {
   try {
-    // --- 1. LE BOUCLIER DE SÉCURITÉ (Ouverture au public) ---
+    // --- 1. IDENTIFICATION ---
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-
-    // Si pas de token, on assigne un ID anonyme au lieu de bloquer
     const userId = token?.sub || "anonymous";
 
-    // --- 2. TRAITEMENT DES DONNÉES ---
+    // --- 2. LE BOUCLIER (RATE LIMITING) ---
+    // Si l'utilisateur est anonyme, on limite son adresse IP. Sinon, on limite son ID.
+    const ip = req.headers.get("x-forwarded-for") ?? "127.0.0.1";
+    const identifier = userId === "anonymous" ? `anon_${ip}` : `user_${userId}`;
+
+    const { success, limit, reset, remaining } =
+      await ratelimit.limit(identifier);
+
+    if (!success) {
+      console.log(`[Rate Limit Exceeded] Identifier: ${identifier}`);
+      return new Response(
+        "L'esprit du Fâ a besoin de repos. Vous avez posé trop de questions consécutives. Revenez dans un instant.",
+        {
+          status: 429,
+          headers: {
+            "X-RateLimit-Limit": limit.toString(),
+            "X-RateLimit-Remaining": remaining.toString(),
+            "X-RateLimit-Reset": reset.toString(),
+          },
+        },
+      );
+    }
+
+    // --- 3. TRAITEMENT DES DONNÉES ---
     const json = await req.json();
     const { messages, id } = json;
 
@@ -71,12 +101,10 @@ export async function POST(req: NextRequest) {
     const chatId = id ?? `chat_${Date.now()}`;
     const coreMessages = convertToCoreMessages(messages as Message[]);
 
-    // --- CORRECTION DU TITRE (Compatible avec la fonction "Renommer") ---
-    // On vérifie d'abord si un titre existe déjà dans Redis pour ne pas l'écraser
+    // --- 4. CORRECTION DU TITRE ---
     const existingTitle = await redis.hget(`chat:${chatId}`, "title");
     let chatTitle = existingTitle as string;
 
-    // Si le titre n'existe pas, on le génère avec la première question
     if (!chatTitle) {
       const firstUserMessage = messages.find((m: Message) => m.role === "user");
       if (firstUserMessage && firstUserMessage.content) {
@@ -88,7 +116,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // --- 3. APPEL IA ET SAUVEGARDE REDIS ---
+    // --- 5. APPEL IA ET SAUVEGARDE REDIS ---
     const result = await streamText({
       model: openai("gpt-4o"),
       messages: coreMessages,
@@ -97,9 +125,7 @@ export async function POST(req: NextRequest) {
       maxTokens: 1000,
 
       async onFinish({ text }) {
-        // On ne sauvegarde dans la base de données QUE si l'utilisateur est connecté
         if (userId !== "anonymous") {
-          // A. On ajoute la réponse complète de l'assistant à l'historique
           const assistantMessage: Message = {
             id: Date.now().toString(),
             role: "assistant",
@@ -107,7 +133,6 @@ export async function POST(req: NextRequest) {
           };
           const updatedMessages = [...messages, assistantMessage];
 
-          // B. Sauvegarde de la conversation entière
           await redis.hset(`chat:${chatId}`, {
             id: chatId,
             userId: userId,
@@ -116,7 +141,6 @@ export async function POST(req: NextRequest) {
             updatedAt: Date.now(),
           });
 
-          // C. Ajout au dossier privé de l'utilisateur
           await redis.zadd(`user:chats:${userId}`, {
             score: Date.now(),
             member: chatId,
