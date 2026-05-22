@@ -54,8 +54,12 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
 
   const scrollContainerRef = useRef<HTMLElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
-  const [isAboutOpen, setIsAboutOpen] = useState(false);
 
+  // NOUVEAU : Ancrage absolu et gestion de l'état de défilement
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isAtBottom, setIsAtBottom] = useState(true);
+
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [currentSpeakingId, setCurrentSpeakingId] = useState<string | null>(
     null,
@@ -153,15 +157,22 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
     window.speechSynthesis.speak(utterance);
   };
 
-  // Auto-scroll vers le bas
+  // NOUVEAU : Détecteur de défilement de l'utilisateur
+  const handleScroll = () => {
+    if (!scrollContainerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } =
+      scrollContainerRef.current;
+    // Si l'utilisateur est à moins de 100px du bas, on le considère "accroché"
+    setIsAtBottom(scrollHeight - scrollTop - clientHeight < 100);
+  };
+
+  // NOUVEAU : Smart Auto-scroll robuste (sans le "smooth" destructeur)
   useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage || error) {
-      container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+    if (isAtBottom && messagesEndRef.current) {
+      // L'utilisation de "auto" au lieu de "smooth" empêche le conflit avec le streaming
+      messagesEndRef.current.scrollIntoView({ behavior: "auto" });
     }
-  }, [messages, error]);
+  }, [messages, isAtBottom]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -177,7 +188,6 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
         <div className="absolute top-[-10%] left-[-10%] w-[60vh] h-[60vh] bg-[#1a0f2e]/20 blur-[120px] rounded-full mix-blend-screen" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[50vh] h-[50vh] bg-[#d4af37]/5 blur-[100px] rounded-full mix-blend-screen" />
-        {/* Grain très subtil pour l&apos;aspect matière */}
         <div className="absolute inset-0 opacity-[0.015] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] brightness-100 contrast-150"></div>
       </div>
 
@@ -276,7 +286,8 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
       {/* ZONE DE DISCUSSION */}
       <main
         ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto overflow-x-hidden p-4 w-full max-w-4xl mx-auto z-10 custom-scrollbar scroll-smooth"
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto overflow-x-hidden p-4 w-full max-w-4xl mx-auto z-10 custom-scrollbar"
       >
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center min-h-[65vh] text-center px-4">
@@ -408,6 +419,9 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
               </button>
             </motion.div>
           )}
+
+          {/* NOUVEAU : Ancre invisible pour le Smart Auto-scroll */}
+          <div ref={messagesEndRef} className="h-px w-full" />
         </div>
       </main>
 
