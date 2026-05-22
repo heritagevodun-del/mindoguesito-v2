@@ -60,7 +60,7 @@ export default function JournalPage() {
 
         {/* NAV DESKTOP */}
         <nav className="hidden md:flex items-center gap-2 text-xs font-medium">
-          <div className="text-[#d4af37] bg-[#d4af37]/10 py-1.5 px-3 rounded-md flex items-center gap-2 border border-[#d4af37]/20">
+          <div className="text-[#d4af37] bg-[#d4af37]/10 py-1.5 px-3 rounded-md flex items-center gap-2 border border-[#d4af37]/20 shadow-inner">
             <Book size={14} /> Journal
           </div>
 
@@ -83,7 +83,7 @@ export default function JournalPage() {
 
           <Link
             href="/"
-            className="text-gray-300 hover:text-white border border-white/20 hover:border-[#d4af37] transition-all py-1.5 px-4 rounded-full flex items-center gap-2 group hover:bg-white/5"
+            className="text-gray-300 hover:text-white border border-white/20 hover:border-[#d4af37] transition-all py-1.5 px-4 rounded-full flex items-center gap-2 group hover:bg-[#0a0a0a]"
           >
             <ArrowLeft
               size={12}
@@ -138,7 +138,7 @@ export default function JournalPage() {
 
                 <div className="h-[1px] w-full bg-white/5 my-2"></div>
 
-                <div className="text-[#d4af37] bg-[#d4af37]/10 p-3 rounded-lg flex items-center gap-3 text-sm border border-[#d4af37]/10">
+                <div className="text-[#d4af37] bg-[#d4af37]/10 p-3 rounded-lg flex items-center gap-3 text-sm border border-[#d4af37]/10 shadow-inner">
                   <Book size={16} /> Journal
                 </div>
 
@@ -190,7 +190,7 @@ export default function JournalPage() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed z-[70] w-full max-w-lg max-h-[85vh] overflow-y-auto bg-[#121212]/95 backdrop-blur-xl border border-[#d4af37]/20 rounded-2xl shadow-2xl custom-scrollbar"
+              className="fixed z-[70] w-full max-w-lg max-h-[85vh] overflow-y-auto bg-[#0a0a0a]/95 backdrop-blur-xl border border-[#d4af37]/20 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] custom-scrollbar"
             >
               <div className="sticky top-0 bg-[#0a0a0a]/95 backdrop-blur-xl p-6 border-b border-white/5 flex justify-between items-center z-10">
                 <div className="flex items-center gap-3">
@@ -201,7 +201,7 @@ export default function JournalPage() {
                 </div>
                 <button
                   onClick={() => setIsAboutOpen(false)}
-                  className="p-2 bg-white/5 hover:bg-red-500/20 hover:text-red-400 rounded-full transition-colors"
+                  className="p-2 bg-white/5 hover:bg-red-500/10 hover:text-red-400 rounded-full transition-colors"
                   aria-label="Fermer la fenêtre"
                 >
                   <X size={20} />
@@ -242,7 +242,7 @@ export default function JournalPage() {
       </AnimatePresence>
 
       {/* --- CONTENU PRINCIPAL --- */}
-      <main className="max-w-6xl mx-auto p-6 md:p-12 w-full z-10">
+      <main className="max-w-6xl mx-auto p-6 md:p-12 w-full z-10 flex-grow">
         {/* TITRE DE SECTION */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -262,7 +262,7 @@ export default function JournalPage() {
           </div>
         </motion.div>
 
-        {/* GRILLE DES ARTICLES (Optimisée SEO) */}
+        {/* GRILLE DES ARTICLES */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {entries.map((entry, index) => (
             <motion.div
@@ -274,11 +274,11 @@ export default function JournalPage() {
               <Link
                 href={`/journal/${entry.id}`}
                 className="block h-full group"
-                title={`Lire l'article : ${entry.title}`}
+                title={`Lire l’article : ${entry.title}`}
               >
-                <article className="bg-[#121212]/80 backdrop-blur-sm p-6 rounded-2xl border border-white/5 hover:border-[#d4af37]/30 transition-all duration-300 flex flex-col h-full hover:-translate-y-1 relative overflow-hidden shadow-lg">
+                <article className="bg-[#0a0a0a]/80 backdrop-blur-md p-6 rounded-2xl border border-white/5 hover:border-[#d4af37]/40 transition-all duration-300 flex flex-col h-full hover:-translate-y-1 relative overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
                   {/* Lueur au survol */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#d4af37]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#d4af37]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-0"></div>
 
                   {/* En-tête */}
                   <header className="flex justify-between items-start mb-4 relative z-10">
@@ -322,14 +322,14 @@ export default function JournalPage() {
         </div>
 
         {/* MESSAGE DE FIN */}
-        <div className="mt-20 text-center border-t border-white/10 pt-8 pb-8">
-          <p className="text-gray-500 text-sm">
-            Vous cherchez une histoire spécifique ? <br />
+        <div className="mt-20 text-center border-t border-white/5 pt-8 pb-8">
+          <p className="text-gray-500 text-sm font-medium">
+            Vous cherchez une vérité spécifique ? <br />
             <Link
               href="/"
-              className="text-[#d4af37] hover:underline decoration-dotted flex items-center justify-center gap-1 mt-2 transition-all hover:text-white"
+              className="text-[#d4af37] hover:underline decoration-dotted flex items-center justify-center gap-2 mt-3 transition-all hover:text-white"
             >
-              <Sparkles size={14} /> Demandez directement à Mindoguesito.
+              <Sparkles size={14} /> Demandez directement à l&apos;Oracle.
             </Link>
           </p>
         </div>

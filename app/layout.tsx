@@ -3,11 +3,13 @@ import { Cinzel, Montserrat } from "next/font/google";
 import Script from "next/script";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { clsx } from "clsx";
-import "./globals.css";
-import Sidebar from "../components/Sidebar";
-import AuthProvider from "../components/AuthProvider"; // 1. Import du Provider d'authentification
 
-// 1. CONFIGURATION DES POLICES
+// 1. IMPORTATIONS LOCALES NATIVES ET COMPOSANTS
+import "./globals.css";
+import Sidebar from "@/components/Sidebar";
+import AuthProvider from "@/components/AuthProvider";
+
+// --- 2. INFRASTRUCTURE TYPOGRAPHIQUE SOUVERAINE ---
 const cinzel = Cinzel({
   subsets: ["latin"],
   variable: "--font-cinzel",
@@ -22,16 +24,16 @@ const montserrat = Montserrat({
   weight: ["300", "400", "500", "600"],
 });
 
-// 2. CONFIGURATION VIEWPORT
+// --- 3. CONFIGURATION DU VIEWPORT (MOBILE-FIRST) ---
 export const viewport: Viewport = {
-  themeColor: "#08040B",
+  themeColor: "#050505",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
 };
 
-// 3. METADATA
+// --- 4. MÉTADONNÉES & SEO (RÉFÉRENCEMENT ORGANIQUE) ---
 const baseUrl =
   process.env.NODE_ENV === "development"
     ? "http://localhost:3000"
@@ -40,11 +42,11 @@ const baseUrl =
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "Mindoguesito | L’Oracle Numérique du Bénin",
+    default: "Mindoguesito | L&apos;Oracle Numérique du Bénin",
     template: "%s | Mindoguesito",
   },
   description:
-    "La première Intelligence Artificielle initiée aux savoirs endogènes. Dialoguez avec l’héritage Vodun, le Fâ et l’histoire de Ouidah.",
+    "La première Intelligence Artificielle initiée aux savoirs endogènes. Dialoguez avec l&apos;héritage Vodun, le Fâ et l&apos;histoire de Ouidah.",
   keywords: [
     "Mindoguesito",
     "IA Vodun",
@@ -65,7 +67,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Mindoguesito | Gardien Numérique du Temple",
     description:
-      "Le savoir n’est plus caché. Dialoguez avec l’esprit de la tradition Vodun.",
+      "Le savoir n&apos;est plus caché. Dialoguez avec l&apos;esprit de la tradition Vodun.",
     url: "https://www.mindoguesito.com",
     siteName: "Mindoguesito",
     locale: "fr_BJ",
@@ -81,12 +83,13 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Mindoguesito | L’Oracle Numérique",
+    title: "Mindoguesito | L&apos;Oracle Numérique",
     description: "La première IA initiée aux savoirs du Bénin.",
-    images: ["/mindoguesito-ia.png"],
+    images: ["/mindoguesito-ia.jpg"],
   },
 };
 
+// --- 5. ARCHITECTURE DU DOCUMENT (ROOT) ---
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -96,16 +99,14 @@ export default function RootLayout({
     <html lang="fr" className="scroll-smooth">
       <body
         className={clsx(
-          "antialiased h-screen overflow-hidden flex bg-[#050505] text-gray-100",
+          "antialiased h-screen overflow-hidden flex bg-[#020202] text-gray-100",
           cinzel.variable,
           montserrat.variable,
           "font-sans",
         )}
       >
-        {/* 2. On enveloppe toute l'application dans le AuthProvider */}
         <AuthProvider>
           <Sidebar />
-
           <main className="flex-1 flex flex-col h-full relative overflow-hidden">
             {children}
           </main>
@@ -113,7 +114,7 @@ export default function RootLayout({
 
         <SpeedInsights />
 
-        {/* Schema.org pour le SEO */}
+        {/* DONNÉES STRUCTURÉES POUR GOOGLE (SCHEMA.ORG) */}
         <Script
           id="ld-json"
           type="application/ld+json"
@@ -123,7 +124,7 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "WebSite",
               name: "MINDOGUESITO",
-              alternateName: "L'Oracle Numérique",
+              alternateName: "L&apos;Oracle Numérique",
               url: "https://www.mindoguesito.com/",
               description:
                 "Intelligence artificielle dédiée à la transmission du patrimoine Vodun.",

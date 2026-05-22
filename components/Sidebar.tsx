@@ -40,7 +40,6 @@ export default function Sidebar() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
 
-  // CORRECTION USEEFFECT : useCallback pour stabiliser la fonction
   const loadChats = useCallback(async () => {
     if (status === "authenticated") {
       setIsLoadingChats(true);
@@ -54,11 +53,13 @@ export default function Sidebar() {
         setIsLoadingChats(false);
       }
     } else if (status === "unauthenticated") {
+      // Contournement du cascading render si l'utilisateur est déconnecté
       setChats([]);
     }
   }, [status]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadChats();
     window.addEventListener("refresh-chats", loadChats);
     return () => window.removeEventListener("refresh-chats", loadChats);
@@ -103,52 +104,72 @@ export default function Sidebar() {
 
   return (
     <>
+      {/* BOUTON MOBILE (OUVERTURE) */}
       {!isOpen && (
         <button
-          className="md:hidden fixed top-3.5 left-4 z-40 p-2 text-[#d4af37] hover:bg-white/5 rounded-full transition-colors active:scale-95"
+          className="md:hidden fixed top-3.5 left-4 z-40 p-2 text-[#d4af37] bg-[#0a0a0a]/80 backdrop-blur-md hover:bg-[#1a1a1a] rounded-lg border border-white/5 transition-colors active:scale-95 shadow-lg"
           onClick={() => setIsOpen(true)}
           aria-label="Ouvrir le menu"
           title="Ouvrir le menu"
         >
-          <Menu size={24} />
+          <Menu size={20} />
         </button>
       )}
 
+      {/* OVERLAY SOMBRE POUR MOBILE */}
+      {isOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* CONTENEUR PRINCIPAL DE LA SIDEBAR */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 w-72 bg-[#050505] border-r border-gray-800 transform transition-transform duration-300 flex flex-col ${isOpen ? "translate-x-0" : "-translate-x-full"} md:relative md:translate-x-0`}
+        className={`fixed inset-y-0 left-0 z-50 w-72 bg-[#050505] border-r border-white/5 shadow-[5px_0_30px_rgba(0,0,0,0.5)] transform transition-transform duration-300 ease-out flex flex-col ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        } md:relative md:translate-x-0 md:shadow-none`}
       >
-        <div className="h-16 flex items-center justify-between px-5 border-b border-gray-800">
+        {/* HEADER SIDEBAR (LOGO) */}
+        <div className="h-16 flex items-center justify-between px-5 border-b border-white/5 bg-[#020202]">
           <Link
             href="/"
-            className="font-serif font-bold text-[#d4af37] tracking-wider uppercase"
+            className="font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#d4af37] to-[#fceeb5] tracking-widest uppercase text-sm"
           >
-            Mindoguesito
+            MINDOGUESITO
           </Link>
           <button
             onClick={() => setIsOpen(false)}
-            className="md:hidden text-gray-400 hover:text-white p-1.5 rounded-full hover:bg-white/5"
+            className="md:hidden text-gray-500 hover:text-white p-1.5 rounded-lg hover:bg-white/5 transition-colors"
             aria-label="Fermer le menu"
             title="Fermer le menu"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
+        {/* NOUVELLE CONSULTATION */}
         <div className="p-4">
           <button
             onClick={() => {
               setIsOpen(false);
               window.location.href = "/";
             }}
-            className="flex items-center gap-2 w-full px-4 py-3 bg-[#1a1a1a] border border-[#d4af37]/20 text-white rounded-xl hover:bg-[#222]"
+            className="flex items-center gap-3 w-full px-4 py-3 bg-[#0a0a0a] border border-[#d4af37]/20 text-white rounded-xl hover:bg-[#111111] hover:border-[#d4af37]/40 transition-all shadow-sm group"
           >
-            <PlusCircle size={18} className="text-[#d4af37]" />
-            <span className="text-sm font-medium">Nouvelle consultation</span>
+            <PlusCircle
+              size={18}
+              className="text-[#d4af37] group-hover:scale-110 transition-transform"
+            />
+            <span className="text-sm font-medium tracking-wide">
+              Nouvelle consultation
+            </span>
           </button>
         </div>
 
-        <div className="px-3 py-2 space-y-1 border-b border-gray-800/50 pb-4">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">
+        {/* MENU LE SANCTUAIRE */}
+        <div className="px-3 py-2 space-y-1 border-b border-white/5 pb-4">
+          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-3 px-2">
             Le Sanctuaire
           </p>
           {MAIN_MENU.map((item) => {
@@ -161,8 +182,8 @@ export default function Sidebar() {
                 onClick={() => setIsOpen(false)}
                 className={`flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-all duration-200 ${
                   isActive
-                    ? "bg-[#d4af37]/10 text-[#d4af37] border border-[#d4af37]/20 font-medium"
-                    : "text-gray-400 hover:bg-[#1a1a1a] hover:text-white border border-transparent"
+                    ? "bg-[#d4af37]/10 text-[#d4af37] border border-[#d4af37]/20 font-medium shadow-inner"
+                    : "text-gray-400 hover:bg-[#0a0a0a] hover:text-white border border-transparent"
                 }`}
               >
                 <item.icon
@@ -175,23 +196,29 @@ export default function Sidebar() {
           })}
         </div>
 
+        {/* HISTORIQUE DES CONSULTATIONS */}
         <div className="flex-1 overflow-y-auto px-3 py-2 space-y-4 custom-scrollbar">
           {status === "unauthenticated" && (
-            <p className="text-xs text-gray-600 px-2 italic mt-2">
-              Connectez-vous pour voir vos archives.
-            </p>
+            <div className="mt-4 px-3 py-4 bg-[#0a0a0a] border border-white/5 rounded-xl text-center">
+              <p className="text-xs text-gray-500 italic">
+                Connectez-vous pour conserver l&apos;historique de vos échanges
+                avec l&apos;Oracle.
+              </p>
+            </div>
           )}
 
-          {/* CORRECTION UTILISATION LOADER */}
           {isLoadingChats && (
-            <div className="flex justify-center py-4">
-              <Loader2 size={20} className="text-[#d4af37] animate-spin" />
+            <div className="flex justify-center py-6">
+              <Loader2
+                size={24}
+                className="text-[#d4af37] animate-spin opacity-70"
+              />
             </div>
           )}
 
           {!isLoadingChats && chats.some((c) => c.pinned) && (
             <div>
-              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-2 px-2 mt-2">
+              <p className="text-[10px] font-bold text-[#d4af37]/70 uppercase tracking-[0.2em] mb-2 px-2 mt-2">
                 Épinglés
               </p>
               {chats
@@ -201,8 +228,8 @@ export default function Sidebar() {
           )}
 
           {!isLoadingChats && chats.some((c) => !c.pinned) && (
-            <div>
-              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-2 px-2 mt-2">
+            <div className="mt-4">
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-2 px-2">
                 Récents
               </p>
               {chats
@@ -212,23 +239,24 @@ export default function Sidebar() {
           )}
         </div>
 
-        <div className="p-4 border-t border-gray-800 bg-[#080808]">
+        {/* FOOTER USER / AUTH */}
+        <div className="p-4 border-t border-white/5 bg-[#020202]">
           {session ? (
-            <div className="flex items-center justify-between p-2 bg-white/5 rounded-xl border border-white/5">
+            <div className="flex items-center justify-between p-2.5 bg-[#0a0a0a] rounded-xl border border-white/5 shadow-sm">
               <div className="flex items-center gap-3 overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={session.user?.image || ""}
-                  className="w-8 h-8 rounded-full"
+                  className="w-8 h-8 rounded-full border border-white/10"
                   alt="Profil"
                 />
-                <span className="text-xs text-gray-200 truncate font-medium">
+                <span className="text-xs text-gray-300 truncate font-medium">
                   {session.user?.name}
                 </span>
               </div>
               <button
                 onClick={() => signOut()}
-                className="text-gray-500 hover:text-red-400 p-1"
+                className="text-gray-500 hover:text-red-400 p-1.5 hover:bg-red-500/10 rounded-lg transition-colors"
                 aria-label="Se déconnecter"
                 title="Se déconnecter"
               >
@@ -238,9 +266,9 @@ export default function Sidebar() {
           ) : (
             <button
               onClick={() => signIn("google")}
-              className="w-full py-2 bg-white text-black rounded-lg text-sm font-bold"
+              className="w-full py-2.5 bg-gradient-to-r from-[#d4af37] to-[#fceeb5] hover:opacity-90 text-black rounded-xl text-sm font-bold shadow-[0_0_15px_rgba(212,175,55,0.2)] transition-all"
             >
-              Connexion
+              Initier la connexion
             </button>
           )}
         </div>
@@ -256,25 +284,34 @@ export default function Sidebar() {
         {editingId === chat.id ? (
           <form
             onSubmit={(e) => renameChat(chat.id, e)}
-            className="flex items-center gap-2 px-3 py-2 bg-[#1a1a1a] rounded-lg border border-[#d4af37]/40"
+            className="flex items-center gap-2 px-3 py-2 bg-[#111111] rounded-lg border border-[#d4af37]/40 shadow-inner"
           >
             <input
               autoFocus
-              className="bg-transparent text-sm text-white outline-none w-full"
+              className="bg-transparent text-sm text-white outline-none w-full placeholder:text-gray-600"
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
               onBlur={() => setEditingId(null)}
               aria-label="Nouveau titre de la discussion"
               placeholder="Nouveau titre..."
             />
-            <button type="submit" aria-label="Valider le titre" title="Valider">
-              <Check size={14} className="text-green-500" />
+            <button
+              type="submit"
+              aria-label="Valider le titre"
+              title="Valider"
+              className="p-1 hover:bg-white/5 rounded"
+            >
+              <Check size={14} className="text-[#d4af37]" />
             </button>
           </form>
         ) : (
           <Link
             href={`/c/${chat.id}`}
-            className={`flex items-center justify-between px-3 py-2.5 text-sm rounded-lg transition-all ${isActive ? "bg-[#1a1a1a] text-white border border-gray-800" : "text-gray-400 hover:bg-[#111] hover:text-gray-200"}`}
+            className={`flex items-center justify-between px-3 py-2.5 text-sm rounded-lg transition-all ${
+              isActive
+                ? "bg-[#111111] text-white border border-white/5 shadow-sm"
+                : "text-gray-400 hover:bg-[#0a0a0a] hover:text-gray-200 border border-transparent"
+            }`}
           >
             <div className="flex items-center gap-3 truncate pr-8">
               <MessageSquare
@@ -284,16 +321,20 @@ export default function Sidebar() {
               <span className="truncate">{chat.title}</span>
             </div>
 
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-1 bg-gradient-to-l from-[#111] via-[#111] to-transparent pl-4">
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-0.5 bg-gradient-to-l from-[#050505] via-[#050505] to-transparent pl-4">
               <button
                 onClick={(e) => togglePin(chat, e)}
-                className="p-1 hover:text-[#d4af37] transition-colors"
+                className="p-1.5 hover:bg-white/5 rounded-md hover:text-[#d4af37] transition-colors"
                 aria-label="Épingler"
                 title="Épingler"
               >
                 <Pin
                   size={14}
-                  className={chat.pinned ? "fill-[#d4af37] text-[#d4af37]" : ""}
+                  className={
+                    chat.pinned
+                      ? "fill-[#d4af37] text-[#d4af37]"
+                      : "text-gray-500"
+                  }
                 />
               </button>
               <button
@@ -303,7 +344,7 @@ export default function Sidebar() {
                   setEditingId(chat.id);
                   setEditTitle(chat.title);
                 }}
-                className="p-1 hover:text-blue-400"
+                className="p-1.5 hover:bg-white/5 rounded-md text-gray-500 hover:text-[#00F3FF] transition-colors"
                 aria-label="Renommer"
                 title="Renommer"
               >
@@ -311,7 +352,7 @@ export default function Sidebar() {
               </button>
               <button
                 onClick={(e) => deleteChat(chat.id, e)}
-                className="p-1 hover:text-red-500"
+                className="p-1.5 hover:bg-red-500/10 rounded-md text-gray-500 hover:text-red-400 transition-colors"
                 aria-label="Supprimer"
                 title="Supprimer"
               >

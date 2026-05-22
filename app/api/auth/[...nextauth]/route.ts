@@ -1,8 +1,19 @@
-import NextAuth from "next-auth";
+import NextAuth, { DefaultSession } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
+// --- EXTENSION DE TYPE (MODULE AUGMENTATION) ---
+// Au lieu de forcer TypeScript à ignorer l’erreur, nous lui apprenons
+// que notre session contient un ID souverain lié à la base de données.
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+    } & DefaultSession["user"];
+  }
+}
+
 const handler = NextAuth({
-  // 1. Définition des fournisseurs d'identité (Ici, uniquement Google)
+  // 1. DÉFINITION DES FOURNISSEURS D’IDENTITÉ
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
@@ -10,26 +21,25 @@ const handler = NextAuth({
     }),
   ],
 
-  // 2. Stratégie de session (JWT est obligatoire pour les bases de données Serverless)
+  // 2. STRATÉGIE DE SESSION (JWT obligatoire pour notre architecture Serverless)
   session: {
     strategy: "jwt",
   },
 
-  // 3. Callbacks (Pour récupérer l'ID unique de l'utilisateur pour notre base de données)
+  // 3. CALLBACKS (Injection de l’ID unique dans la session)
   callbacks: {
     async session({ session, token }) {
-      // On attache l'ID unique de Google à la session de notre application
       if (session.user && token.sub) {
-        // @ts-expect-error - Extension du type session par défaut de NextAuth
+        // TypeScript reconnaît maintenant cette propriété. Plus de "ts-expect-error".
         session.user.id = token.sub;
       }
       return session;
     },
   },
 
-  // 4. Clé de cryptage globale
+  // 4. SÉCURITÉ CRYPTOGRAPHIQUE GLOBALE
   secret: process.env.NEXTAUTH_SECRET,
 });
 
-// Obligatoire pour le fonctionnement avec Next.js App Router
+// Exportation obligatoire pour le routage App Router de Next.js
 export { handler as GET, handler as POST };

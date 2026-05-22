@@ -24,7 +24,7 @@ import { processTextForTTS } from "@/utils/phonetics";
 const SUGGESTIONS = [
   "✨ Qui es-tu ?",
   "🥥 Les secrets du Fâ",
-  "⚔️ L'histoire des Amazones",
+  "⚔️ L&apos;histoire des Amazones",
   "🛡️ Le rôle du Zangbeto",
 ];
 
@@ -49,7 +49,7 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
     onFinish: () => {
       window.dispatchEvent(new Event("refresh-chats"));
     },
-    onError: (err) => console.error("Erreur Chat:", err),
+    onError: (err) => console.error("[Erreur Oracle] :", err),
   });
 
   const scrollContainerRef = useRef<HTMLElement>(null);
@@ -62,6 +62,7 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
   );
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
 
+  // Chargement de l&apos;archive si existante
   useEffect(() => {
     if (existingChatId) {
       fetch(`/api/chats/${existingChatId}`)
@@ -71,12 +72,15 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
             setMessages(data);
           }
         })
-        .catch((err) => console.error("Erreur chargement archive:", err));
+        .catch((err) =>
+          console.error("Erreur de restauration mémorielle:", err),
+        );
     }
   }, [existingChatId, setMessages]);
 
   const hasInitialized = useRef(false);
 
+  // Initialisation par contexte (depuis l&apos;URL)
   useEffect(() => {
     if (!hasInitialized.current && messages.length === 0 && !existingChatId) {
       const context = searchParams.get("context");
@@ -101,6 +105,7 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
     }
   }, [searchParams, messages, append, existingChatId]);
 
+  // Chargement des voix TTS
   useEffect(() => {
     const loadVoices = () => {
       setVoices(window.speechSynthesis.getVoices());
@@ -148,6 +153,7 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
     window.speechSynthesis.speak(utterance);
   };
 
+  // Auto-scroll vers le bas
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
@@ -166,14 +172,16 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
   };
 
   return (
-    <div className="relative flex flex-col h-full w-full bg-transparent text-gray-100 font-sans selection:bg-[#d4af37]/30 selection:text-white">
+    <div className="relative flex flex-col h-full w-full bg-[#020202] text-gray-100 font-sans selection:bg-[#d4af37]/30 selection:text-white">
+      {/* INFRASTRUCTURE D&apos;ARRIÈRE-PLAN */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute top-[-10%] left-[-10%] w-[50vh] h-[50vh] bg-[#2a1b3d]/20 blur-[100px] rounded-full mix-blend-screen" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40vh] h-[40vh] bg-[#d4af37]/5 blur-[80px] rounded-full mix-blend-screen" />
-        <div className="absolute inset-0 opacity-[0.02] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] brightness-100 contrast-150"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[60vh] h-[60vh] bg-[#1a0f2e]/20 blur-[120px] rounded-full mix-blend-screen" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50vh] h-[50vh] bg-[#d4af37]/5 blur-[100px] rounded-full mix-blend-screen" />
+        {/* Grain très subtil pour l&apos;aspect matière */}
+        <div className="absolute inset-0 opacity-[0.015] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] brightness-100 contrast-150"></div>
       </div>
 
-      {/* --- CORRECTION HEADER ICI : padding gauche pl-[4.5rem] pour laisser la place au bouton --- */}
+      {/* HEADER SOUVERAIN */}
       <header className="flex-none h-16 px-4 pl-[4.5rem] md:pl-6 border-b border-white/5 bg-[#050505]/80 backdrop-blur-xl flex items-center justify-between z-20">
         <div
           className="flex items-center gap-3 group cursor-pointer"
@@ -196,11 +204,12 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
             aria-label="Ouvrir À Propos"
           >
             <User size={14} />{" "}
-            <span className="hidden sm:inline">À Propos</span>
+            <span className="hidden sm:inline">L&apos;Esprit</span>
           </button>
         </nav>
       </header>
 
+      {/* MODALE "À PROPOS" */}
       <AnimatePresence>
         {isAboutOpen && (
           <>
@@ -208,7 +217,7 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 backdrop-blur-md z-[60] flex items-center justify-center p-4"
+              className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
               onClick={() => setIsAboutOpen(false)}
             />
             <motion.div
@@ -216,7 +225,7 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: "spring", duration: 0.5 }}
-              className="fixed z-[70] w-full max-w-lg max-h-[85vh] overflow-y-auto bg-[#0a0a0a] border border-[#d4af37]/20 rounded-2xl shadow-2xl custom-scrollbar"
+              className="fixed z-[70] w-full max-w-lg max-h-[85vh] overflow-y-auto bg-[#0a0a0a] border border-[#d4af37]/20 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] custom-scrollbar"
             >
               <div className="sticky top-0 bg-[#0a0a0a]/95 backdrop-blur-xl p-6 border-b border-white/5 flex justify-between items-center z-10">
                 <div className="flex items-center gap-3">
@@ -227,7 +236,7 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
                 </div>
                 <button
                   onClick={() => setIsAboutOpen(false)}
-                  className="p-2 bg-white/5 hover:bg-red-500/20 hover:text-red-400 rounded-full transition-colors"
+                  className="p-2 text-gray-400 hover:bg-red-500/10 hover:text-red-400 rounded-full transition-colors"
                   aria-label="Fermer la modale"
                 >
                   <X size={20} />
@@ -255,7 +264,7 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
                   <p className="text-sm">
                     Initié par le projet <strong>Héritage Vodun</strong>, cet
                     oracle numérique a été conçu pour respecter les codes et la
-                    solennité de la tradition.
+                    solennité de notre tradition souveraine.
                   </p>
                 </section>
               </div>
@@ -264,23 +273,24 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
         )}
       </AnimatePresence>
 
+      {/* ZONE DE DISCUSSION */}
       <main
         ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto overflow-x-hidden p-4 w-full max-w-4xl mx-auto z-10 custom-scrollbar"
+        className="flex-1 overflow-y-auto overflow-x-hidden p-4 w-full max-w-4xl mx-auto z-10 custom-scrollbar scroll-smooth"
       >
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-            <div className="relative mb-6 group">
-              <div className="absolute inset-0 bg-[#d4af37]/20 blur-2xl rounded-full opacity-50 animate-pulse-slow"></div>
+          <div className="flex flex-col items-center justify-center min-h-[65vh] text-center px-4">
+            <div className="relative mb-8 group">
+              <div className="absolute inset-0 bg-[#d4af37]/10 blur-3xl rounded-full opacity-60 animate-pulse-slow"></div>
               <Logo className="w-24 h-24 drop-shadow-2xl relative z-10" />
             </div>
-            <h2 className="text-2xl md:text-3xl font-serif font-bold text-white mb-2">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-white mb-3">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#d4af37] to-[#fceeb5]">
                 Kwabo
               </span>
               , Initié.
             </h2>
-            <p className="text-sm text-gray-400 max-w-md leading-relaxed mb-8">
+            <p className="text-sm md:text-base text-gray-400 max-w-md leading-relaxed mb-10">
               Je suis la mémoire vivante du Bénin. Interroge-moi sur le Vodun,
               notre culture, notre histoire et nos traditions.
             </p>
@@ -289,11 +299,11 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
                 <button
                   key={i}
                   onClick={() => append({ role: "user", content: sug })}
-                  className="px-4 py-3 bg-[#121212] border border-white/5 hover:border-[#d4af37]/30 hover:bg-[#1a1a1a] rounded-xl text-sm text-gray-300 hover:text-[#d4af37] transition-all duration-200 text-left flex items-center gap-3 shadow-sm group"
+                  className="px-4 py-3.5 bg-[#0a0a0a] border border-white/5 hover:border-[#d4af37]/40 hover:bg-[#111111] rounded-xl text-sm text-gray-300 hover:text-[#d4af37] transition-all duration-300 text-left flex items-center gap-3 shadow-[0_4px_10px_rgba(0,0,0,0.5)] group"
                 >
                   <MessageSquare
                     size={16}
-                    className="text-gray-500 group-hover:text-[#d4af37]"
+                    className="text-gray-600 group-hover:text-[#d4af37] transition-colors"
                   />{" "}
                   {sug}
                 </button>
@@ -302,25 +312,31 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
           </div>
         )}
 
-        <div className="space-y-6 pb-6 mt-4">
+        <div className="space-y-8 pb-8 mt-4">
           {messages.map((m) => (
             <motion.div
               key={m.id}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
               className={`flex w-full ${m.role === "user" ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`max-w-[90%] md:max-w-[80%] rounded-2xl px-5 py-4 shadow-md text-sm md:text-[0.95rem] leading-relaxed ${m.role === "user" ? "bg-[#2a2a2a] text-white font-medium rounded-tr-sm" : "bg-transparent text-gray-100 prose-ai"}`}
+                className={`max-w-[92%] md:max-w-[85%] px-5 py-4 text-[0.95rem] leading-relaxed shadow-sm ${
+                  m.role === "user"
+                    ? "bg-[#161616] border border-white/5 text-white font-medium rounded-2xl rounded-tr-sm"
+                    : "bg-transparent text-gray-200 prose-ai border-l-2 border-[#d4af37]/30 pl-6 rounded-r-2xl"
+                }`}
               >
                 {m.role !== "user" && (
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-3">
                     <Logo className="w-5 h-5" />
-                    <span className="text-xs font-serif font-bold text-[#d4af37]">
+                    <span className="text-xs font-serif font-bold text-[#d4af37] tracking-widest uppercase">
                       Mindoguesito
                     </span>
                   </div>
                 )}
+
                 <ReactMarkdown
                   components={{
                     a: ({ href, children }) => (
@@ -328,7 +344,7 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
                         href={href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[#d4af37] underline decoration-dotted hover:text-white transition-colors"
+                        className="text-[#d4af37] underline decoration-dotted decoration-white/30 underline-offset-4 hover:decoration-[#d4af37] hover:text-white transition-all"
                       >
                         {children}
                       </a>
@@ -337,11 +353,12 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
                 >
                   {m.content}
                 </ReactMarkdown>
+
                 {m.role !== "user" && !isLoading && (
-                  <div className="mt-3 pt-2 flex items-center gap-2 opacity-60 hover:opacity-100 transition-opacity">
+                  <div className="mt-4 pt-3 flex items-center gap-2 border-t border-white/5 opacity-50 hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => speakMessage(m.content, m.id)}
-                      className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-gray-400 hover:text-[#d4af37] transition-colors"
+                      className="flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider text-gray-400 hover:text-[#d4af37] transition-colors"
                     >
                       {currentSpeakingId === m.id ? (
                         <>
@@ -353,7 +370,7 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
                         </>
                       ) : (
                         <>
-                          <Volume2 size={14} /> Écouter
+                          <Volume2 size={14} /> Écouter l&apos;Oracle
                         </>
                       )}
                     </button>
@@ -362,48 +379,51 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
               </div>
             </motion.div>
           ))}
+
           {isLoading && (
             <div className="flex justify-start w-full">
-              <div className="bg-transparent px-5 py-3 flex items-center gap-2">
-                <Logo className="w-5 h-5 animate-pulse" />
+              <div className="bg-transparent border-l-2 border-[#d4af37]/30 pl-6 py-3 flex items-center gap-3">
+                <Logo className="w-5 h-5 animate-pulse opacity-70" />
                 <div className="flex gap-1.5">
                   <div className="w-1.5 h-1.5 bg-[#d4af37] rounded-full animate-bounce"></div>
-                  <div className="w-1.5 h-1.5 bg-[#d4af37] rounded-full animate-bounce delay-100"></div>
-                  <div className="w-1.5 h-1.5 bg-[#d4af37] rounded-full animate-bounce delay-200"></div>
+                  <div className="w-1.5 h-1.5 bg-[#d4af37] rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                  <div className="w-1.5 h-1.5 bg-[#d4af37] rounded-full animate-bounce [animation-delay:-0.3s]"></div>
                 </div>
               </div>
             </div>
           )}
+
           {error && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="p-3 rounded-xl bg-red-900/20 border border-red-800/50 text-red-200 text-xs text-center mx-auto max-w-sm mt-4"
+              className="p-4 rounded-xl bg-red-900/10 border border-red-900/30 text-red-300 text-xs text-center mx-auto max-w-sm mt-6 shadow-lg backdrop-blur-md"
             >
               <p>La connexion avec l&apos;Oracle a été interrompue.</p>
               <button
                 onClick={() => reload()}
-                className="mt-2 px-3 py-1.5 bg-red-900/40 hover:bg-red-800/60 rounded-lg text-red-100 transition-colors"
+                className="mt-3 px-4 py-2 bg-red-900/20 hover:bg-red-900/40 border border-red-800/50 rounded-lg text-red-200 transition-colors uppercase tracking-wider font-bold text-[10px]"
               >
-                Réessayer
+                Tenter une reconnexion
               </button>
             </motion.div>
           )}
         </div>
       </main>
 
-      <footer className="flex-none p-4 w-full max-w-4xl mx-auto z-20">
+      {/* FOOTER & INPUT SOUVERAIN */}
+      <footer className="flex-none p-4 pb-6 w-full max-w-3xl mx-auto z-20">
         <form
           ref={formRef}
           onSubmit={handleSubmit}
-          className="relative flex items-end gap-2 bg-[#121212] border border-white/10 rounded-2xl shadow-lg p-1 transition-all focus-within:border-[#d4af37]/50 focus-within:ring-1 focus-within:ring-[#d4af37]/50"
+          className="relative flex items-end gap-2 bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] p-1.5 transition-all focus-within:border-[#d4af37]/40 focus-within:ring-1 focus-within:ring-[#d4af37]/20"
         >
           <div className="relative flex-grow flex items-center">
             <TextareaAutosize
-              className="w-full bg-transparent text-white text-sm block py-3 pl-4 pr-12 resize-none focus:outline-none custom-scrollbar"
+              className="w-full bg-transparent text-white text-[0.95rem] block py-3.5 pl-4 pr-14 resize-none focus:outline-none custom-scrollbar placeholder:text-gray-600"
               minRows={1}
-              maxRows={5}
-              placeholder="Interrogez l'Oracle..."
+              maxRows={6}
+              placeholder="Quelle sagesse cherchez-vous ?"
               value={input || ""}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
@@ -412,19 +432,19 @@ function ChatContent({ existingChatId }: { existingChatId?: string }) {
             <button
               type="submit"
               disabled={isLoading || !input?.trim()}
-              className="absolute right-2 p-2 bg-[#d4af37] hover:bg-[#fceeb5] disabled:bg-[#2a2a2a] disabled:text-gray-500 text-black rounded-xl transition-all shadow-sm active:scale-95"
-              aria-label="Envoyer"
+              className="absolute right-2 p-2.5 bg-[#d4af37] hover:bg-[#fceeb5] disabled:bg-[#1a1a1a] disabled:text-gray-600 text-black rounded-xl transition-all shadow-[0_0_15px_rgba(212,175,55,0.2)] disabled:shadow-none active:scale-95"
+              aria-label="Interroger l'Oracle"
             >
               <Send
                 size={18}
-                className={isLoading ? "opacity-0" : "opacity-100"}
+                className={`transition-opacity ${isLoading ? "opacity-0" : "opacity-100"}`}
               />
             </button>
           </div>
         </form>
-        <p className="text-center text-gray-500 text-[10px] mt-3 font-medium">
-          L&apos;IA peut faire des erreurs. Consultez les gardiens de la
-          tradition pour les certitudes.
+        <p className="text-center text-gray-500/70 text-[10px] mt-4 font-medium tracking-wide">
+          L&apos;IA peut omettre des nuances. La vérité absolue réside toujours
+          chez les initiés et les gardiens du culte.
         </p>
       </footer>
     </div>
@@ -439,9 +459,11 @@ export default function ChatClient({
   return (
     <Suspense
       fallback={
-        <div className="flex h-full w-full items-center justify-center text-[#d4af37]">
+        <div className="flex h-full w-full items-center justify-center text-[#d4af37] bg-[#020202]">
           <Logo className="w-8 h-8 animate-pulse mr-3" />
-          Chargement de l&apos;Oracle...
+          <span className="font-serif tracking-widest text-sm uppercase">
+            Réveil de l&apos;Oracle...
+          </span>
         </div>
       }
     >

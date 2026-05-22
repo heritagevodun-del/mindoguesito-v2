@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 /* =========================================
-   1. CHARTE GRAPHIQUE "VODUN SOUL"
+   1. CHARTE GRAPHIQUE SOUVERAINE
    Définition des couleurs via le système de thème v4
    ========================================= */
 @theme {
-  --color-void: #08040B;
+  --color-void: #050505;
   --color-gold: #D4AF37;
   --color-terra: #8A2C1B;
   --color-tech: #00F3FF;
@@ -27,7 +27,7 @@ html {
 body {
   height: 100%;
   background-color: var(--color-void);
-  color: #f3f4f6; /* gray-100 */
+  color: #f3f4f6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -63,9 +63,7 @@ body {
 @layer utilities {
   .glass-panel {
     background: rgba(20, 20, 25, 0.4);
-    /* Ajout du préfixe pour Safari / iOS */
     -webkit-backdrop-filter: blur(12px);
-    /* Propriété standard pour Chrome, Edge, Firefox */
     backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.05);
   }
@@ -89,24 +87,39 @@ body {
   line-height: 1.7;
   font-size: 0.95rem;
 }
-.prose-ai p { margin-bottom: 1rem; }
-.prose-ai strong { color: var(--color-gold); font-weight: 600; }
-.prose-ai ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; color: #a0a0a0; }
-.prose-ai ol { list-style-type: decimal; padding-left: 1.5rem; margin-bottom: 1rem; }
+.prose-ai p { 
+  margin-bottom: 1rem; 
+}
+.prose-ai strong { 
+  color: var(--color-gold); 
+  font-weight: 600; 
+}
+.prose-ai ul { 
+  list-style-type: disc; 
+  padding-left: 1.5rem; 
+  margin-bottom: 1rem; 
+  color: #d1d5db; 
+}
+.prose-ai ol { 
+  list-style-type: decimal; 
+  padding-left: 1.5rem; 
+  margin-bottom: 1rem; 
+  color: #d1d5db;
+}
 .prose-ai code { 
-  background: rgba(255,255,255,0.1); 
+  background: rgba(255, 255, 255, 0.05); 
   padding: 0.2rem 0.4rem; 
   border-radius: 4px; 
   font-family: monospace; 
   font-size: 0.85em;
-  color: var(--color-tech);
+  color: var(--color-gold);
 }
 .prose-ai pre {
-  background: #111;
+  background: #0a0a0a;
   padding: 1rem;
   border-radius: 8px;
   overflow-x: auto;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(212, 175, 55, 0.1);
   margin-bottom: 1rem;
 }
 .prose-ai h1, .prose-ai h2, .prose-ai h3 {

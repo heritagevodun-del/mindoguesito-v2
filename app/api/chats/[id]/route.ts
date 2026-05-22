@@ -2,9 +2,10 @@ import { Redis } from "@upstash/redis";
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
 
+// Initialisation de la base de données (Upstash)
 const redis = Redis.fromEnv();
 
-// 1. LECTURE DE L'ARCHIVE
+// --- 1. LECTURE DE L’ARCHIVE SPÉCIFIQUE ---
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -12,7 +13,10 @@ export async function GET(
   try {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     if (!token || !token.sub) {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Initiation requise" },
+        { status: 401 },
+      );
     }
 
     const resolvedParams = await params;
@@ -29,12 +33,15 @@ export async function GET(
 
     return NextResponse.json(chatData.messages || []);
   } catch (error) {
-    console.error("Erreur lors de la récupération du chat:", error);
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+    console.error("[Erreur API - GET Chat] :", error);
+    return NextResponse.json(
+      { error: "L’esprit est silencieux" },
+      { status: 500 },
+    );
   }
 }
 
-// 2. SUPPRESSION DE LA CONSULTATION
+// --- 2. SUPPRESSION DÉFINITIVE DE LA CONSULTATION ---
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -42,26 +49,41 @@ export async function DELETE(
   try {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     if (!token || !token.sub) {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Initiation requise" },
+        { status: 401 },
+      );
     }
 
     const resolvedParams = await params;
     const chatId = resolvedParams.id;
+    const userId = token.sub;
 
     const chatOwner = await redis.hget(`chat:${chatId}`, "userId");
-    if (chatOwner !== token.sub) {
-      return NextResponse.json({ error: "Interdit" }, { status: 403 });
+    if (chatOwner !== userId) {
+      return NextResponse.json(
+        { error: "Transgression interdite" },
+        { status: 403 },
+      );
     }
 
-    await redis.del(`chat:${chatId}`);
+    // CORRECTION MAJEURE : Pipeline pour supprimer le Hash ET nettoyer l'index ZSET
+    const pipeline = redis.pipeline();
+    pipeline.del(`chat:${chatId}`);
+    pipeline.zrem(`user:chats:${userId}`, chatId);
+    await pipeline.exec();
+
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Erreur lors de la suppression:", error);
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+    console.error("[Erreur API - DELETE Chat] :", error);
+    return NextResponse.json(
+      { error: "Échec de l’effacement" },
+      { status: 500 },
+    );
   }
 }
 
-// 3. MODIFICATION (Renommer / Épingler)
+// --- 3. MODIFICATION (Renommer / Épingler) ---
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -69,7 +91,10 @@ export async function PATCH(
   try {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     if (!token || !token.sub) {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Initiation requise" },
+        { status: 401 },
+      );
     }
 
     const resolvedParams = await params;
@@ -80,18 +105,28 @@ export async function PATCH(
 
     const chatOwner = await redis.hget(`chat:${chatId}`, "userId");
     if (chatOwner !== token.sub) {
-      return NextResponse.json({ error: "Interdit" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Transgression interdite" },
+        { status: 403 },
+      );
     }
 
-    // CORRECTION TYPE STRICT (Fini le "any")
+    // Sécurisation stricte des types de mise à jour
     const updates: Record<string, string | boolean> = {};
     if (title !== undefined) updates.title = title;
     if (pinned !== undefined) updates.pinned = pinned;
 
-    await redis.hset(`chat:${chatId}`, updates);
+    // On s'assure de ne faire l'appel Redis que s'il y a des données à modifier
+    if (Object.keys(updates).length > 0) {
+      await redis.hset(`chat:${chatId}`, updates);
+    }
+
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Erreur lors de la modification:", error);
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+    console.error("[Erreur API - PATCH Chat] :", error);
+    return NextResponse.json(
+      { error: "Échec de la modification" },
+      { status: 500 },
+    );
   }
 }
