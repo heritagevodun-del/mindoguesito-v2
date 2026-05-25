@@ -24,7 +24,7 @@ import { processTextForTTS } from "@/utils/phonetics";
 const SUGGESTIONS = [
   "✨ Qui es-tu ?",
   "🥥 Les secrets du Fâ",
-  "⚔️ L&apos;histoire des Amazones",
+  "⚔️ L'histoire des Amazones",
   "🛡️ Le rôle du Zangbeto",
 ];
 
